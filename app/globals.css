@@ -1,0 +1,179 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ */
+/*  Quota — design tokens                                              */
+/*  Light: quasi-bianco caldo. Dark: antracite profondo.                */
+/*  Un solo accento: verde Spotify molto attenuato.                    */
+/* ------------------------------------------------------------------ */
+
+:root {
+  --bg: #f7f7f5;
+  --bg-elevated: #ffffff;
+  --surface: #ffffff;
+  --surface-muted: #efefec;
+
+  --border: rgba(20, 20, 18, 0.08);
+  --border-strong: rgba(20, 20, 18, 0.14);
+
+  --text-primary: #1c1c1a;
+  --text-secondary: #6b6b65;
+  --text-tertiary: #9c9c95;
+
+  --accent: #5b8f6f;
+  --accent-strong: #4a7a5c;
+  --accent-foreground: #ffffff;
+  --accent-soft: rgba(91, 143, 111, 0.12);
+  --accent-soft-strong: rgba(91, 143, 111, 0.2);
+
+  --amber: #b98a4e;
+  --amber-soft: rgba(185, 138, 78, 0.14);
+  --brick: #a85c52;
+  --brick-soft: rgba(168, 92, 82, 0.12);
+
+  --shadow-card: 0 1px 2px rgba(20, 20, 18, 0.03), 0 8px 24px -12px rgba(20, 20, 18, 0.08);
+  --shadow-elevated: 0 4px 12px rgba(20, 20, 18, 0.04), 0 16px 40px -16px rgba(20, 20, 18, 0.14);
+
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-card: 22px;
+  --radius-lg: 26px;
+  --radius-pill: 999px;
+
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast: 160ms;
+  --dur-base: 200ms;
+  --dur-slow: 220ms;
+}
+
+.dark {
+  --bg: #131513;
+  --bg-elevated: #1a1c1a;
+  --surface: #1a1c1a;
+  --surface-muted: #202220;
+
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.13);
+
+  --text-primary: #f2f2ef;
+  --text-secondary: #a4a49e;
+  --text-tertiary: #74746e;
+
+  --accent: #6fa886;
+  --accent-strong: #83b998;
+  --accent-foreground: #0f1410;
+  --accent-soft: rgba(111, 168, 134, 0.16);
+  --accent-soft-strong: rgba(111, 168, 134, 0.26);
+
+  --amber: #cd9f61;
+  --amber-soft: rgba(205, 159, 97, 0.16);
+  --brick: #c07871;
+  --brick-soft: rgba(192, 120, 113, 0.16);
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.2), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+  --shadow-elevated: 0 4px 16px rgba(0, 0, 0, 0.3), 0 20px 48px -16px rgba(0, 0, 0, 0.6);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-soft: var(--accent-soft);
+  --color-amber: var(--amber);
+  --color-amber-soft: var(--amber-soft);
+  --color-brick: var(--brick);
+  --color-brick-soft: var(--brick-soft);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-card: var(--radius-card);
+  --radius-lg: var(--radius-lg);
+  --radius-pill: var(--radius-pill);
+
+  --font-sans: var(--font-sf);
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: -apple-system, "SF Pro Text", "SF Pro Display", "Inter", system-ui,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.011em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@keyframes quota-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-quota-in {
+  animation: quota-fade-in var(--dur-slow) var(--ease-standard) both;
+}
+
+@keyframes quota-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-quota-pop {
+  animation: quota-pop var(--dur-base) var(--ease-standard) both;
+}
