@@ -177,48 +177,64 @@ Deno.serve(async (req: Request) => {
     }
   }
 
-  if (candidates.length === 0) {
-    return Response.json({ ok: true, today, nextCharge, created: 0, message: "nessuna notifica da generare" });
+  let insertedCount = 0;
+
+  if (candidates.length > 0) {
+    const keys = candidates.map((c) => c.idempotency_key);
+    const { data: existing, error: existingErr } = await supabase
+      .from("notifications")
+      .select("idempotency_key")
+      .in("idempotency_key", keys);
+
+    if (existingErr) {
+      return Response.json({ ok: false, error: existingErr.message }, { status: 500 });
+    }
+
+    const existingKeys = new Set((existing ?? []).map((r) => r.idempotency_key));
+    const toInsert = candidates.filter((c) => !existingKeys.has(c.idempotency_key));
+
+    if (toInsert.length > 0) {
+      const { data: inserted, error: insertErr } = await supabase
+        .from("notifications")
+        .insert(toInsert)
+        .select("id");
+
+      if (insertErr) {
+        return Response.json({ ok: false, error: insertErr.message }, { status: 500 });
+      }
+      insertedCount = inserted?.length ?? 0;
+    }
   }
 
-  const keys = candidates.map((c) => c.idempotency_key);
-  const { data: existing, error: existingErr } = await supabase
+  // Non solo le notifiche appena create: anche quelle di run precedenti la
+  // cui email non e' mai partita (provider giu', Resend non configurato al
+  // momento, errore transitorio) vengono ritentate qui. Idempotenza
+  // dell'invio = email_sent_at, non "e' stata appena creata".
+  const { data: unsent, error: unsentErr } = await supabase
     .from("notifications")
-    .select("idempotency_key")
-    .in("idempotency_key", keys);
+    .select("id, title, body")
+    .is("email_sent_at", null)
+    .order("created_at", { ascending: true })
+    .limit(50);
 
-  if (existingErr) {
-    return Response.json({ ok: false, error: existingErr.message }, { status: 500 });
-  }
-
-  const existingKeys = new Set((existing ?? []).map((r) => r.idempotency_key));
-  const toInsert = candidates.filter((c) => !existingKeys.has(c.idempotency_key));
-
-  if (toInsert.length === 0) {
-    return Response.json({ ok: true, today, nextCharge, created: 0, message: "gia' generate in precedenza" });
-  }
-
-  const { data: inserted, error: insertErr } = await supabase
-    .from("notifications")
-    .insert(toInsert)
-    .select("id, title, body");
-
-  if (insertErr) {
-    return Response.json({ ok: false, error: insertErr.message }, { status: 500 });
+  if (unsentErr) {
+    return Response.json({ ok: false, error: unsentErr.message }, { status: 500 });
   }
 
   let emailSent = false;
-  if (adminEmail && inserted && inserted.length > 0) {
+  let emailError: string | undefined;
+
+  if (adminEmail && unsent && unsent.length > 0) {
     const provider = getEmailProvider();
     const html =
-      `<h2>Quota — ${inserted.length} nuova/e notifica/e</h2><ul>` +
-      inserted.map((n) => `<li><strong>${n.title}</strong><br/>${n.body}</li>`).join("") +
+      `<h2>Quota — ${unsent.length} notifica/e</h2><ul>` +
+      unsent.map((n) => `<li><strong>${n.title}</strong><br/>${n.body}</li>`).join("") +
       "</ul>";
-    const text = inserted.map((n) => `${n.title}\n${n.body}`).join("\n\n");
+    const text = unsent.map((n) => `${n.title}\n${n.body}`).join("\n\n");
 
     const result = await provider.send({
       to: adminEmail,
-      subject: `Quota — ${inserted.length} notifica/e`,
+      subject: `Quota — ${unsent.length} notifica/e`,
       html,
       text,
     });
@@ -230,8 +246,10 @@ Deno.serve(async (req: Request) => {
         .update({ email_sent_at: new Date().toISOString() })
         .in(
           "id",
-          inserted.map((n) => n.id)
+          unsent.map((n) => n.id)
         );
+    } else {
+      emailError = result.error;
     }
   }
 
@@ -239,7 +257,10 @@ Deno.serve(async (req: Request) => {
     ok: true,
     today,
     nextCharge,
-    created: inserted?.length ?? 0,
+    created: insertedCount,
+    pendingEmail: unsent?.length ?? 0,
     emailSent,
+    ...(emailError ? { emailError } : {}),
+    ...(!adminEmail ? { warning: "NOTIFICATIONS_TO_EMAIL/ADMIN_EMAIL non configurata" } : {}),
   });
 });

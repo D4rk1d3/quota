@@ -205,7 +205,7 @@ export async function getMemberDetail(id: string): Promise<MemberDetailResult | 
 
   const { data: paymentRows, error: payErr } = await supabase
     .from("payments")
-    .select("id, amount_cents, kind, method, paid_at, note, created_at")
+    .select("id, amount_cents, kind, method, paid_at, note, voids_payment_id, created_at")
     .eq("member_id", id)
     .order("created_at", { ascending: false });
   if (payErr) throw new Error(payErr.message);
@@ -222,6 +222,12 @@ export async function getMemberDetail(id: string): Promise<MemberDetailResult | 
     if (!current || a.cycle_date > current) maxCycleByPayment.set(a.payment_id, a.cycle_date);
   }
 
+  const voidedPaymentIds = new Set(
+    (paymentRows ?? [])
+      .filter((p) => p.kind === "void" && p.voids_payment_id)
+      .map((p) => p.voids_payment_id as string)
+  );
+
   const payments: Payment[] = (paymentRows ?? [])
     .filter((p) => p.kind === "payment")
     .map((p) => {
@@ -235,16 +241,19 @@ export async function getMemberDetail(id: string): Promise<MemberDetailResult | 
         method: p.method!,
         note: p.note ?? undefined,
         coversUntil,
+        voided: voidedPaymentIds.has(p.id),
       };
     });
+
+  const lastActivePayment = payments.find((p) => !p.voided);
 
   const member: Member = {
     id: memberRow.id,
     name: memberRow.name,
     monthlyShare: centsToEuro(memberRow.monthly_share_cents),
     coveredUntil: coverage?.covered_until ?? asOf,
-    lastPaymentDate: payments[0]?.date ?? null,
-    lastPaymentAmount: payments[0]?.amount ?? null,
+    lastPaymentDate: lastActivePayment?.date ?? null,
+    lastPaymentAmount: lastActivePayment?.amount ?? null,
     status: coverage ? statusFromCoverage(coverage.is_overdue, coverage.covered_until, asOf) : "in_ritardo",
     joinedAt: memberRow.joined_at,
     color: memberRow.color,

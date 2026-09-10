@@ -44,6 +44,7 @@ export interface Payment {
   method: PaymentMethod;
   note?: string;
   coversUntil: string; // ISO date derivata dal pagamento
+  voided?: boolean; // true se esiste già uno storno (kind='void') per questo pagamento
 }
 
 export type ActivityType = "payment" | "reminder" | "member_added" | "charge";

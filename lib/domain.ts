@@ -19,8 +19,13 @@ export function formatDateShort(iso: string): string {
   return formatDate(iso, { day: "numeric", month: "short" });
 }
 
+/**
+ * Giorno, mese e anno (es. "5 gennaio 2027"). Le date di copertura possono
+ * cadere in anni diversi da quello corrente (pagamenti multi-mese/anno in
+ * anticipo): l'anno va sempre mostrato per evitare ambiguità.
+ */
 export function formatDayMonth(iso: string): string {
-  return formatDate(iso, { day: "numeric", month: "long" });
+  return formatDate(iso, { day: "numeric", month: "long", year: "numeric" });
 }
 
 /** Prossima data di addebito Spotify a partire da "oggi". */

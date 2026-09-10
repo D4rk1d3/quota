@@ -7,3 +7,4 @@ npm-debug.log*
 .vercel
 tsconfig.tsbuildinfo
 supabase/.temp
+.DS_Store
