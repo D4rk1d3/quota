@@ -14,14 +14,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { AddMemberDialog } from "@/components/quota/add-member-dialog";
 import { RecordPaymentDialog } from "@/components/quota/record-payment-dialog";
+import { ReversePaymentDialog } from "@/components/quota/reverse-payment-dialog";
 import { ChargeStatusBadge } from "@/components/quota/status-badge";
 import { EmptyState } from "@/components/quota/empty-state";
-import type { SubscriptionDetail } from "@/lib/supabase/queries";
+import type { ChargePayment, SubscriptionDetail } from "@/lib/supabase/queries";
 import type { PaymentMethod } from "@/lib/types";
 import { formatEUR, formatDate } from "@/lib/domain";
 import { updateMember, removeMember } from "@/lib/actions/members";
 import { generateBillingCycle } from "@/lib/actions/subscription";
-import { MoreVertical, PauseCircle, PlayCircle, UserMinus, CalendarPlus, Users } from "lucide-react";
+import { MoreVertical, PauseCircle, PlayCircle, UserMinus, CalendarPlus, Users, Undo2 } from "lucide-react";
 
 const CYCLE_STATUS_LABEL: Record<string, string> = {
   current: "In corso",
@@ -38,9 +39,12 @@ export function SubscriptionDetailView({
   paymentMethods: PaymentMethod[];
 }) {
   const router = useRouter();
-  const { subscription, members, cycles, chargesByCycle } = detail;
+  const { subscription, members, cycles, chargesByCycle, paymentsByCharge } = detail;
   const [generating, setGenerating] = React.useState(false);
   const [payingCharge, setPayingCharge] = React.useState<{ id: string; member: string; remaining: number } | null>(
+    null
+  );
+  const [reversingPayment, setReversingPayment] = React.useState<ChargePayment & { memberName: string } | null>(
     null
   );
 
@@ -163,26 +167,58 @@ export function SubscriptionDetailView({
                 <Progress value={pct} className="mt-3" />
 
                 <div className="mt-4 flex flex-col divide-y divide-[var(--border)]">
-                  {charges.map((c) => (
-                    <div key={c.id} className="flex items-center gap-3 py-2.5">
-                      <span className="flex-1 text-[13px] text-[var(--text-primary)]">{c.memberName}</span>
-                      <ChargeStatusBadge status={c.status} />
-                      <span className="w-20 text-right text-[12.5px] text-[var(--text-tertiary)]">
-                        {formatEUR(c.expectedAmount, c.currency)}
-                      </span>
-                      {c.status !== "paid" && c.status !== "credit" && (
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() =>
-                            setPayingCharge({ id: c.id, member: c.memberName, remaining: c.remainingAmount })
-                          }
-                        >
-                          Registra
-                        </Button>
-                      )}
-                    </div>
-                  ))}
+                  {charges.map((c) => {
+                    const payments = paymentsByCharge[c.id] ?? [];
+                    return (
+                      <div key={c.id} className="py-2.5">
+                        <div className="flex items-center gap-3">
+                          <span className="flex-1 text-[13px] text-[var(--text-primary)]">{c.memberName}</span>
+                          <ChargeStatusBadge status={c.status} />
+                          <span className="w-20 text-right text-[12.5px] text-[var(--text-tertiary)]">
+                            {formatEUR(c.expectedAmount, c.currency)}
+                          </span>
+                          {c.status !== "paid" && c.status !== "credit" && (
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() =>
+                                setPayingCharge({ id: c.id, member: c.memberName, remaining: c.remainingAmount })
+                              }
+                            >
+                              Registra
+                            </Button>
+                          )}
+                        </div>
+                        {payments.length > 0 && (
+                          <div className="mt-2 flex flex-col gap-1.5 pl-1">
+                            {payments.map((p) => (
+                              <div
+                                key={p.id}
+                                className="flex items-center gap-2 text-[12px] text-[var(--text-tertiary)]"
+                              >
+                                <span className={p.status === "reversed" ? "line-through" : undefined}>
+                                  {formatEUR(p.amount, p.currency)} · {formatDate(p.paidAt, { day: "numeric", month: "short" })}
+                                  {p.paymentMethodLabel ? ` · ${p.paymentMethodLabel}` : ""}
+                                </span>
+                                {p.status === "active" ? (
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-6 px-2 text-[11.5px] text-[var(--text-tertiary)]"
+                                    onClick={() => setReversingPayment({ ...p, memberName: c.memberName })}
+                                  >
+                                    <Undo2 className="h-3 w-3" /> Storna
+                                  </Button>
+                                ) : (
+                                  <span className="text-[11.5px]">stornato</span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </Card>
             );
@@ -198,6 +234,17 @@ export function SubscriptionDetailView({
           memberName={payingCharge.member}
           remainingAmount={payingCharge.remaining}
           paymentMethods={paymentMethods}
+        />
+      )}
+
+      {reversingPayment && (
+        <ReversePaymentDialog
+          open={!!reversingPayment}
+          onOpenChange={(open) => !open && setReversingPayment(null)}
+          paymentId={reversingPayment.id}
+          memberName={reversingPayment.memberName}
+          amount={reversingPayment.amount}
+          currency={reversingPayment.currency}
         />
       )}
     </div>

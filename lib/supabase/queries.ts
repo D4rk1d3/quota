@@ -5,6 +5,7 @@ import type {
   DashboardSummary,
   Entitlement,
   MemberCharge,
+  Payment,
   PaymentMethod,
   Subscription,
   SubscriptionMember,
@@ -89,11 +90,16 @@ export async function getSubscriptions(): Promise<Subscription[]> {
   }));
 }
 
+export interface ChargePayment extends Payment {
+  paymentMethodLabel: string | null;
+}
+
 export interface SubscriptionDetail {
   subscription: Subscription;
   members: SubscriptionMember[];
   cycles: BillingCycle[];
   chargesByCycle: Record<string, MemberCharge[]>;
+  paymentsByCharge: Record<string, ChargePayment[]>;
 }
 
 export async function getSubscriptionDetail(id: string): Promise<SubscriptionDetail | null> {
@@ -145,6 +151,36 @@ export async function getSubscriptionDetail(id: string): Promise<SubscriptionDet
     }
   }
 
+  const chargeIds = Object.values(chargesByCycle)
+    .flat()
+    .map((c) => c.id);
+
+  const paymentsByCharge: Record<string, ChargePayment[]> = {};
+  if (chargeIds.length > 0) {
+    const { data: paymentRows, error: paymentErr } = await supabase
+      .from("payments")
+      .select("*, payment_methods(label)")
+      .in("charge_id", chargeIds)
+      .order("paid_at", { ascending: false });
+    if (paymentErr) throw new Error(paymentErr.message);
+
+    for (const p of paymentRows ?? []) {
+      const list = (paymentsByCharge[p.charge_id] ??= []);
+      list.push({
+        id: p.id,
+        chargeId: p.charge_id,
+        memberId: p.member_id,
+        amount: p.amount,
+        currency: p.currency,
+        paymentMethodId: p.payment_method_id,
+        paidAt: p.paid_at,
+        note: p.note,
+        status: p.status,
+        paymentMethodLabel: (p.payment_methods as unknown as { label: string } | null)?.label ?? null,
+      });
+    }
+  }
+
   return {
     subscription: mapSubscription(subRow),
     members: (memberRows ?? []).map((m) => ({
@@ -174,7 +210,34 @@ export async function getSubscriptionDetail(id: string): Promise<SubscriptionDet
       status: c.status,
     })),
     chargesByCycle,
+    paymentsByCharge,
   };
+}
+
+export interface ActivityEntry {
+  id: string;
+  eventType: string;
+  entityType: string;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+}
+
+export async function getRecentActivity(limit = 15): Promise<ActivityEntry[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("activity_log")
+    .select("id, event_type, entity_type, metadata, created_at")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw new Error(error.message);
+
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    eventType: row.event_type,
+    entityType: row.entity_type,
+    metadata: (row.metadata as Record<string, unknown>) ?? {},
+    createdAt: row.created_at,
+  }));
 }
 
 export interface UpcomingCycle extends BillingCycle {
