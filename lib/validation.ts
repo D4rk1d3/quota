@@ -73,6 +73,13 @@ export const reversePaymentSchema = z.object({
 });
 export type ReversePaymentInput = z.infer<typeof reversePaymentSchema>;
 
+export const createReminderSchema = z.object({
+  memberId: z.string().uuid(),
+  chargeId: z.string().uuid().optional(),
+  message: z.string().trim().min(1, "Il messaggio è obbligatorio").max(500),
+});
+export type CreateReminderInput = z.infer<typeof createReminderSchema>;
+
 export const paymentMethodCreateSchema = z.object({
   label: z.string().trim().min(1, "Serve un nome per il metodo").max(120),
   methodType: z.enum(paymentMethodTypes),

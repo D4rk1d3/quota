@@ -22,7 +22,8 @@ import type { PaymentMethod } from "@/lib/types";
 import { formatEUR, formatDate } from "@/lib/domain";
 import { updateMember, removeMember } from "@/lib/actions/members";
 import { generateBillingCycle } from "@/lib/actions/subscription";
-import { MoreVertical, PauseCircle, PlayCircle, UserMinus, CalendarPlus, Users, Undo2 } from "lucide-react";
+import { recordReminderSent } from "@/lib/actions/reminders";
+import { MoreVertical, PauseCircle, PlayCircle, UserMinus, CalendarPlus, Users, Undo2, Copy } from "lucide-react";
 
 const CYCLE_STATUS_LABEL: Record<string, string> = {
   current: "In corso",
@@ -72,6 +73,25 @@ export function SubscriptionDetailView({
     const result = await removeMember({ id });
     if (!result.ok) toast.error(result.error);
     else router.refresh();
+  }
+
+  async function handleSendReminder(charge: {
+    id: string;
+    memberId: string;
+    memberName: string;
+    remainingAmount: number;
+    currency: string;
+    dueDate: string;
+  }) {
+    const message = `Ciao ${charge.memberName}, ti ricordo ${formatEUR(charge.remainingAmount, charge.currency)} per ${subscription.name} (scadenza ${formatDate(charge.dueDate, { day: "numeric", month: "short" })}).`;
+    try {
+      await navigator.clipboard.writeText(message);
+      toast.success("Promemoria copiato negli appunti");
+    } catch {
+      toast.error("Impossibile copiare negli appunti");
+      return;
+    }
+    await recordReminderSent({ memberId: charge.memberId, chargeId: charge.id, message });
   }
 
   return (
@@ -178,15 +198,33 @@ export function SubscriptionDetailView({
                             {formatEUR(c.expectedAmount, c.currency)}
                           </span>
                           {c.status !== "paid" && c.status !== "credit" && (
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              onClick={() =>
-                                setPayingCharge({ id: c.id, member: c.memberName, remaining: c.remainingAmount })
-                              }
-                            >
-                              Registra
-                            </Button>
+                            <>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() =>
+                                  handleSendReminder({
+                                    id: c.id,
+                                    memberId: c.memberId,
+                                    memberName: c.memberName,
+                                    remainingAmount: c.remainingAmount,
+                                    currency: c.currency,
+                                    dueDate: c.dueDate,
+                                  })
+                                }
+                              >
+                                <Copy className="h-3.5 w-3.5" /> Promemoria
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                onClick={() =>
+                                  setPayingCharge({ id: c.id, member: c.memberName, remaining: c.remainingAmount })
+                                }
+                              >
+                                Registra
+                              </Button>
+                            </>
                           )}
                         </div>
                         {payments.length > 0 && (
