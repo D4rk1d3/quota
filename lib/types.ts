@@ -148,5 +148,5 @@ export interface Entitlement {
 /** Limiti del tier gratuito — applicati lato server (vedi lib/actions/subscriptions.ts). */
 export const FREE_TIER_LIMITS = {
   maxSubscriptions: 1,
-  maxMembersPerSubscription: 4,
+  maxMembersPerSubscription: 6,
 } as const;

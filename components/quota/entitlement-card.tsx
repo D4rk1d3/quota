@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { createCheckoutSession } from "@/lib/actions/billing";
-import type { Entitlement } from "@/lib/types";
+import { FREE_TIER_LIMITS, type Entitlement } from "@/lib/types";
 import { formatDate } from "@/lib/domain";
 import { Sparkles } from "lucide-react";
 
@@ -54,8 +54,8 @@ export function EntitlementCard({ entitlement }: { entitlement: Entitlement }) {
         {!entitlement.isPro && (
           <div className="rounded-[var(--radius-md)] bg-[var(--surface-muted)] p-4">
             <p className="text-[13px] text-[var(--text-secondary)]">
-              Il piano gratuito include un abbonamento con fino a 4 membri. Passa a Pro per abbonamenti e membri
-              illimitati.
+              Il piano gratuito include un abbonamento con fino a {FREE_TIER_LIMITS.maxMembersPerSubscription} membri.
+              Passa a Pro per abbonamenti e membri illimitati.
             </p>
             <Button size="sm" className="mt-3" onClick={handleUpgrade} disabled={loading}>
               {loading ? "Un attimo…" : "Passa a Pro"}
