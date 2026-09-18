@@ -61,25 +61,48 @@ tests/
 
 ## Modello dati (riassunto)
 
-- `subscriptions` — piano Spotify Family: `monthly_cost_cents` (2099),
-  `billing_day` (5), `member_quota_cents` (350), `member_count` (6). Una
-  sola riga `active = true` alla volta (storicizzabile se il piano cambia).
-- `members` — i partecipanti. Nessun account: sono solo record.
+Il DB supporta **più abbonamenti attivi in parallelo** (Spotify, Netflix,
+ecc.), condivisi dallo stesso gruppo di persone:
+
+- `subscriptions` — un abbonamento: `name`, `monthly_cost_cents`,
+  `billing_day`, `member_quota_cents` (quota "standard" suggerita),
+  `start_date`. Più righe `active = true` possono coesistere
+  (storicizzabile: disattivarne una non la cancella).
+- `members` — anagrafica **globale** delle persone (nome, email, colore,
+  note). Nessun account: sono solo record, condivisi tra abbonamenti.
+- `subscription_members` — la partecipazione di una persona a un
+  abbonamento specifico: `monthly_share_cents`, `joined_at`, `active`. È
+  qui che vive la quota reale di ognuno per quel piano (una stessa persona
+  può avere quote diverse su abbonamenti diversi).
 - `payments` — **ledger immutabile**: solo `INSERT`/`SELECT`, nessun grant
   `UPDATE`/`DELETE` nemmeno per l'admin. Annullare o correggere un
   pagamento significa inserire una nuova riga (`kind = 'void'` o
   `'adjustment'`) che referenzia l'originale — mai una modifica silenziosa.
+  Ogni riga porta `subscription_id` **e** `member_id`, vincolati da una
+  foreign key composita verso `subscription_members`: non è possibile
+  registrare un pagamento per una combinazione persona/abbonamento
+  inesistente.
 - `coverage_allocations` — come l'importo di ogni pagamento è stato diviso
-  sui cicli mensili (`cycle_date`). Anch'essa immutabile/insert-only.
-- `notifications` — generate dal job giornaliero, con `idempotency_key`
-  univoca per evitare duplicati.
+  sui cicli mensili (`cycle_date`) di **quel** abbonamento. Anch'essa
+  immutabile/insert-only, stessa foreign key composita di `payments`.
+- `notifications` — generate dal job giornaliero per ciascun abbonamento
+  attivo, con `idempotency_key` univoca (namespaced per `subscription_id`)
+  per evitare duplicati.
 - **Nessuna tabella di calendario**: le scadenze mensili sono calcolate al
   volo da `billing_day` + `start_date` (funzione `public.billing_cycles`).
 
 La copertura di un membro (credito disponibile, mesi coperti, "coperto fino
-al") è calcolata dalla funzione `public.member_coverage()`, il fondo
-Spotify da `public.fund_state()`: entrambe leggibili via RPC da
-`lib/supabase/queries.ts`.
+al") è calcolata da `public.member_coverage(member_id, subscription_id,
+as_of)`, il fondo da `public.fund_state(subscription_id, as_of)` — ogni
+abbonamento ha il proprio fondo, essendo economicamente indipendente.
+Entrambe leggibili via RPC da `lib/supabase/queries.ts`.
+
+**Nota sull'app attuale**: l'interfaccia mostra ancora un solo piano per
+schermata (non c'è ancora uno switcher tra abbonamenti). Tutte le query
+risolvono "quale" abbonamento tramite `getDefaultSubscriptionId()` in
+`lib/supabase/queries.ts` (il più vecchio tra gli attivi) — un ponte
+deliberato e isolato in un unico punto, in attesa di un selettore reale in
+UI.
 
 ## Setup da zero
 
@@ -178,9 +201,26 @@ npx supabase secrets set NOTIFICATIONS_FROM_EMAIL=quota@tuodominio.com
 npx supabase secrets set NOTIFICATIONS_TO_EMAIL=admin@esempio.com
 ```
 
-Push web è previsto come estensione futura: basta implementare
-`EmailProvider`-like `PushProvider` con la stessa interfaccia `send()` e
-comporlo nel job, senza toccare la logica di generazione notifiche.
+### Push nativa (Android, FCM)
+
+Stessa idea di `email.ts`: `_shared/push.ts` definisce `PushProvider` con
+`FcmPushProvider` (invio reale via FCM HTTP v1, firma il JWT del service
+account a mano con Web Crypto — nessuna dipendenza `firebase-admin` in
+Deno) e `NoopPushProvider` (fallback che logga soltanto). Per abilitare
+l'invio reale, dopo aver creato un progetto Firebase e generato una
+service account key (Project Settings → Service accounts → Generate new
+private key):
+
+```bash
+npx supabase secrets set FCM_SERVICE_ACCOUNT_JSON="$(cat service-account.json)"
+```
+
+I token dei device vengono registrati in `public.device_push_tokens`
+dall'app Android stessa (vedi sezione successiva); il job li legge tutti
+e invia una push per token a ogni run con notifiche pendenti
+(`push_sent_at is null`, stesso pattern di retry di `email_sent_at`).
+Token non più validi (app disinstallata, permesso revocato) vengono
+rimossi automaticamente quando FCM risponde `UNREGISTERED`/`NOT_FOUND`.
 
 ### Pianificazione (pg_cron)
 
@@ -208,6 +248,54 @@ curl -X POST "https://<project-ref>.supabase.co/functions/v1/daily-notifications
   -H "Authorization: Bearer <service_role o anon key>" \
   -H "Content-Type: application/json" -d '{}'
 ```
+
+## App Android (Capacitor)
+
+`android/` è un progetto nativo generato da [Capacitor](https://capacitorjs.com)
+che carica direttamente `https://quota-nu-six.vercel.app` (vedi
+`capacitor.config.ts`) in una WebView: niente build statica, Server
+Actions e sessione Supabase via cookie funzionano esattamente come sul
+web. Il valore aggiunto del wrapper nativo è la push FCM reale, l'icona
+sul dispositivo e la distribuzione via Play Store.
+
+### 1. Firebase (una tantum, gratuito)
+
+1. Crea un progetto su [Firebase Console](https://console.firebase.google.com).
+2. Aggiungi un'app Android con package name `com.quota.app` (deve
+   combaciare con `appId` in `capacitor.config.ts`).
+3. Scarica `google-services.json` e mettilo in `android/app/`
+   (è già in `.gitignore`: ognuno usa il proprio progetto Firebase).
+4. Project Settings → Service accounts → "Generate new private key": il
+   JSON scaricato è quello da usare per `FCM_SERVICE_ACCOUNT_JSON` (vedi
+   sopra).
+
+### 2. Build e run
+
+```bash
+npx cap sync android
+npx cap open android   # apre Android Studio
+```
+
+Da Android Studio: Run su un device/emulatore. Al primo avvio l'app
+chiede il permesso notifiche e registra il token FCM (server action
+`registerPushToken`, tabella `device_push_tokens`, protetta da RLS come
+tutto il resto — solo l'admin autenticato può scrivere il proprio token).
+
+### 3. Pubblicazione su Play Store
+
+Non necessaria per l'uso personale (puoi installare l'APK/AAB firmato
+direttamente sul tuo device). Se in futuro vorrai pubblicarla: serve un
+account Google Play Console ($25 una tantum), una release firmata
+(`./gradlew bundleRelease` con un keystore, non incluso nel repo), e le
+schermate/testo per la scheda Play Store.
+
+### macOS
+
+Non ancora impacchettata: al momento la PWA installata (Safari/Chrome →
+"Aggiungi al Dock") copre il caso d'uso desktop. Un wrapper nativo con
+[Tauri](https://tauri.app) resta un'opzione futura, ma richiede un Apple
+Developer Program a pagamento ($99/anno) per firma/notarizzazione — non
+attivato per ora.
 
 ## Sicurezza
 

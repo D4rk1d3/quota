@@ -18,10 +18,10 @@ function isPublicPath(pathname: string) {
 
 /**
  * Rinfresca la sessione Supabase ad ogni richiesta e protegge tutte le
- * rotte tranne login/callback/offline. Il controllo "l'email e' quella
- * dell'admin" e' gia' garantito a monte da handle_new_auth_user() (nessun
- * altro utente puo' esistere), qui verifichiamo solo che esista una
- * sessione valida.
+ * rotte tranne login/callback/offline. App multi-tenant: qualunque utente
+ * autenticato passa — l'isolamento dei dati tra organizzatori e' garantito
+ * dalla RLS (subscriptions.organizer_id = auth.uid()), non da un controllo
+ * qui.
  */
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });

@@ -2,12 +2,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutGrid, Users, CalendarDays, Settings, Music2, LogOut } from "lucide-react";
+import { LayoutGrid, CalendarDays, Settings, Wallet, LogOut } from "lucide-react";
 import { signOut } from "@/lib/actions/auth";
 
 const NAV_ITEMS = [
   { href: "/", label: "Dashboard", icon: LayoutGrid },
-  { href: "/membri", label: "Membri", icon: Users },
   { href: "/calendario", label: "Calendario", icon: CalendarDays },
   { href: "/impostazioni", label: "Impostazioni", icon: Settings },
 ];
@@ -18,7 +17,7 @@ export function Sidebar() {
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-[232px] flex-col border-r border-[var(--border)] bg-[var(--bg)] px-4 py-6 md:flex">
       <div className="flex items-center gap-2.5 px-2 pb-8">
         <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-[var(--accent-soft)]">
-          <Music2 className="h-[18px] w-[18px] text-[var(--accent-strong)]" strokeWidth={2.2} />
+          <Wallet className="h-[18px] w-[18px] text-[var(--accent-strong)]" strokeWidth={2.2} />
         </div>
         <span className="text-[15px] font-semibold tracking-[-0.01em]">Quota</span>
       </div>
@@ -44,11 +43,6 @@ export function Sidebar() {
           );
         })}
       </nav>
-
-      <div className="rounded-[var(--radius-md)] bg-[var(--surface-muted)] px-3.5 py-3">
-        <p className="text-[12px] font-medium text-[var(--text-secondary)]">Spotify Family</p>
-        <p className="mt-0.5 text-[12px] text-[var(--text-tertiary)]">Divisione quota mensile</p>
-      </div>
 
       <form action={signOut} className="mt-2">
         <button

@@ -1,25 +1,22 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
-import { centsToEuro } from "@/lib/adapters";
 import type {
-  ActivityItem,
-  FundState,
-  Member,
-  MemberStatus,
-  Payment,
-  SpotifyPlan,
+  BillingCycle,
+  DashboardSummary,
+  Entitlement,
+  MemberCharge,
+  PaymentMethod,
+  Subscription,
+  SubscriptionMember,
 } from "@/lib/types";
 
-// Fuso orario di riferimento per "oggi": l'admin e Spotify fatturano in
-// Europe/Rome. Il server Next.js (es. Vercel) gira in UTC, quindi non si
-// puo' usare new Date().toISOString() (sposterebbe la data vicino alla
-// mezzanotte). Intl.DateTimeFormat con timeZone esplicito e' corretto a
-// prescindere dal fuso del processo Node.
-const BUSINESS_TIMEZONE = "Europe/Rome";
-
+// Fuso orario di riferimento per "oggi" (l'admin/i suoi gruppi fatturano in
+// Europe/Rome nella maggior parte dei casi d'uso attesi). Il server Next.js
+// (es. Vercel) gira in UTC: Intl.DateTimeFormat con timeZone esplicito e'
+// corretto a prescindere dal fuso del processo Node.
 function todayIso(): string {
   const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: BUSINESS_TIMEZONE,
+    timeZone: "Europe/Rome",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -30,254 +27,217 @@ function todayIso(): string {
   return `${y}-${m}-${d}`;
 }
 
-/** Aggiunge un mese a una data "YYYY-MM-DD" via aritmetica su stringa (nessun Date/fuso orario coinvolto). */
-function addOneMonthToDateString(iso: string): string {
-  const [y, m] = iso.split("-").map(Number);
-  const nextMonth = m === 12 ? 1 : m + 1;
-  const nextYear = m === 12 ? y + 1 : y;
-  return `${nextYear}-${String(nextMonth).padStart(2, "0")}-${iso.slice(8, 10)}`;
-}
+export { todayIso };
 
-function statusFromCoverage(isOverdue: boolean, coveredUntil: string, asOf: string): MemberStatus {
-  if (isOverdue) return "in_ritardo";
-  const days = Math.ceil(
-    (new Date(coveredUntil + "T00:00:00").getTime() - new Date(asOf + "T00:00:00").getTime()) /
-      (1000 * 60 * 60 * 24)
-  );
-  if (days <= 7) return "in_scadenza";
-  return "regolare";
-}
-
-export async function getSubscriptionPlan(): Promise<SpotifyPlan> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.from("subscriptions").select("*").eq("active", true).single();
-  if (error || !data) {
-    throw new Error("Nessun piano Spotify attivo configurato");
-  }
+function mapSubscription(row: {
+  id: string;
+  name: string;
+  description: string | null;
+  icon: string | null;
+  currency: string;
+  current_price: number;
+  billing_frequency: Subscription["billingFrequency"];
+  billing_interval: number;
+  share_type: Subscription["shareType"];
+  next_renewal_date: string;
+  start_date: string;
+  status: Subscription["status"];
+}): Subscription {
   return {
-    planName: data.name,
-    monthlyCost: centsToEuro(data.monthly_cost_cents),
-    billingDay: data.billing_day,
-    perMemberShare: centsToEuro(data.member_quota_cents),
-    adminPaymentMethod: "bonifico",
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    icon: row.icon,
+    currency: row.currency,
+    currentPrice: row.current_price,
+    billingFrequency: row.billing_frequency,
+    billingInterval: row.billing_interval,
+    shareType: row.share_type,
+    nextRenewalDate: row.next_renewal_date,
+    startDate: row.start_date,
+    status: row.status,
   };
 }
 
-interface MembersWithCoverageResult {
-  members: Member[];
-  asOf: string;
+export async function getDashboardSummary(): Promise<DashboardSummary> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("get_dashboard");
+  if (error) throw new Error(error.message);
+  const row = data?.[0];
+  return {
+    totalExpected: row?.total_expected ?? 0,
+    totalCollected: row?.total_collected ?? 0,
+    totalOutstanding: row?.total_outstanding ?? 0,
+    paymentsCount: row?.payments_count ?? 0,
+    overdueCount: row?.overdue_count ?? 0,
+    nextRenewalDate: row?.next_renewal_date ?? null,
+    nextRenewalSubscription: row?.next_renewal_subscription ?? null,
+  };
 }
 
-export async function getMembersWithCoverage(): Promise<MembersWithCoverageResult> {
+export async function getSubscriptions(): Promise<Subscription[]> {
   const supabase = await createClient();
-  const asOf = todayIso();
+  const { data, error } = await supabase
+    .from("subscriptions")
+    .select("*, subscription_members(count)")
+    .order("created_at", { ascending: true });
+  if (error) throw new Error(error.message);
 
-  const [{ data: coverage, error: covErr }, { data: memberRows, error: memErr }, { data: payments, error: payErr }] =
+  return (data ?? []).map((row) => ({
+    ...mapSubscription(row),
+    memberCount: (row.subscription_members as unknown as { count: number }[])?.[0]?.count ?? 0,
+  }));
+}
+
+export interface SubscriptionDetail {
+  subscription: Subscription;
+  members: SubscriptionMember[];
+  cycles: BillingCycle[];
+  chargesByCycle: Record<string, MemberCharge[]>;
+}
+
+export async function getSubscriptionDetail(id: string): Promise<SubscriptionDetail | null> {
+  const supabase = await createClient();
+
+  const [{ data: subRow, error: subErr }, { data: memberRows, error: memErr }, { data: cycleRows, error: cycErr }] =
     await Promise.all([
-      supabase.rpc("member_coverage_all", { p_as_of: asOf }),
-      supabase.from("members").select("*").eq("active", true),
+      supabase.from("subscriptions").select("*").eq("id", id).maybeSingle(),
+      supabase.from("subscription_members").select("*").eq("subscription_id", id).order("created_at"),
       supabase
-        .from("payments")
-        .select("member_id, amount_cents, paid_at, kind")
-        .eq("kind", "payment")
-        .order("paid_at", { ascending: false }),
+        .from("billing_cycles")
+        .select("*")
+        .eq("subscription_id", id)
+        .order("period_start", { ascending: false })
+        .limit(12),
     ]);
 
-  if (covErr) throw new Error(covErr.message);
+  if (subErr) throw new Error(subErr.message);
+  if (!subRow) return null;
   if (memErr) throw new Error(memErr.message);
-  if (payErr) throw new Error(payErr.message);
+  if (cycErr) throw new Error(cycErr.message);
 
-  const joinedAtByMember = new Map((memberRows ?? []).map((m) => [m.id, m.joined_at]));
-  const lastPaymentByMember = new Map<string, { date: string; amount: number }>();
-  for (const p of payments ?? []) {
-    if (!lastPaymentByMember.has(p.member_id)) {
-      lastPaymentByMember.set(p.member_id, { date: p.paid_at, amount: centsToEuro(p.amount_cents) });
+  const cycleIds = (cycleRows ?? []).map((c) => c.id);
+  const nameByMember = new Map((memberRows ?? []).map((m) => [m.id, m.name]));
+
+  const chargesByCycle: Record<string, MemberCharge[]> = {};
+  if (cycleIds.length > 0) {
+    const { data: chargeRows, error: chargeErr } = await supabase
+      .from("v_member_charges")
+      .select("*")
+      .in("billing_cycle_id", cycleIds);
+    if (chargeErr) throw new Error(chargeErr.message);
+
+    for (const c of chargeRows ?? []) {
+      if (!c.billing_cycle_id || !c.id || !c.member_id) continue;
+      const list = (chargesByCycle[c.billing_cycle_id] ??= []);
+      list.push({
+        id: c.id,
+        billingCycleId: c.billing_cycle_id,
+        memberId: c.member_id,
+        memberName: nameByMember.get(c.member_id) ?? "Membro",
+        expectedAmount: c.expected_amount ?? 0,
+        currency: c.currency ?? subRow.currency,
+        dueDate: c.due_date ?? subRow.next_renewal_date,
+        totalPaid: c.total_paid ?? 0,
+        remainingAmount: c.remaining_amount ?? 0,
+        status: (c.charge_status as MemberCharge["status"]) ?? "scheduled",
+      });
     }
   }
 
-  const members: Member[] = (coverage ?? []).map((c) => {
-    const last = lastPaymentByMember.get(c.member_id);
-    return {
-      id: c.member_id,
-      name: c.name,
-      monthlyShare: centsToEuro(c.monthly_share_cents),
-      coveredUntil: c.covered_until,
-      lastPaymentDate: last?.date ?? null,
-      lastPaymentAmount: last?.amount ?? null,
-      status: statusFromCoverage(c.is_overdue, c.covered_until, asOf),
-      joinedAt: joinedAtByMember.get(c.member_id) ?? asOf,
-      color: c.color,
-    };
-  });
-
-  return { members, asOf };
-}
-
-export async function getFundState(): Promise<FundState> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("fund_state", { p_as_of: todayIso() });
-  if (error) throw new Error(error.message);
-  const row = data?.[0];
-  if (!row) throw new Error("Impossibile calcolare lo stato del fondo");
-
   return {
-    balance: centsToEuro(row.balance_cents),
-    collectedThisCycle: centsToEuro(row.collected_this_cycle_cents),
-    expectedThisCycle: centsToEuro(row.expected_this_cycle_cents),
-    toRecover: centsToEuro(row.to_recover_cents),
-    membersInGoodStanding: row.members_in_good_standing,
-    totalMembers: row.total_members,
+    subscription: mapSubscription(subRow),
+    members: (memberRows ?? []).map((m) => ({
+      id: m.id,
+      subscriptionId: m.subscription_id,
+      name: m.name,
+      email: m.email,
+      phone: m.phone,
+      initials: m.initials,
+      avatarColor: m.avatar_color,
+      defaultShare: m.default_share,
+      status: m.status,
+      pauseFrom: m.pause_from,
+      pauseUntil: m.pause_until,
+      joinedAt: m.joined_at,
+    })),
+    cycles: (cycleRows ?? []).map((c) => ({
+      id: c.id,
+      subscriptionId: c.subscription_id,
+      periodStart: c.period_start,
+      periodEnd: c.period_end,
+      renewalDate: c.renewal_date,
+      priceAtCycle: c.price_at_cycle,
+      currency: c.currency,
+      expectedTotal: c.expected_total,
+      collectedTotal: c.collected_total,
+      status: c.status,
+    })),
+    chargesByCycle,
   };
 }
 
-export async function getActivity(limit = 20): Promise<ActivityItem[]> {
-  const supabase = await createClient();
-
-  const [{ data: payments, error: payErr }, { data: notifications, error: notifErr }, { data: members }] =
-    await Promise.all([
-      supabase
-        .from("payments")
-        .select("id, member_id, amount_cents, kind, paid_at, created_at, note")
-        .order("created_at", { ascending: false })
-        .limit(limit),
-      supabase
-        .from("notifications")
-        .select("id, member_id, type, created_at, body")
-        .order("created_at", { ascending: false })
-        .limit(limit),
-      supabase.from("members").select("id, name"),
-    ]);
-
-  if (payErr) throw new Error(payErr.message);
-  if (notifErr) throw new Error(notifErr.message);
-
-  const nameById = new Map((members ?? []).map((m) => [m.id, m.name]));
-
-  const paymentItems: ActivityItem[] = (payments ?? []).map((p) => {
-    const name = nameById.get(p.member_id) ?? "Membro";
-    let description: string;
-    if (p.kind === "payment") description = `${name} ha pagato la quota`;
-    else if (p.kind === "void") description = `Pagamento di ${name} annullato`;
-    else description = `Rettifica sul pagamento di ${name}`;
-
-    return {
-      id: p.id,
-      type: "payment",
-      memberId: p.member_id,
-      date: p.created_at.slice(0, 10),
-      amount: centsToEuro(p.amount_cents),
-      description,
-    };
-  });
-
-  const notificationItems: ActivityItem[] = (notifications ?? []).map((n) => ({
-    id: n.id,
-    type: n.type === "charge_due" || n.type === "charge_reminder_3d" ? "charge" : "reminder",
-    memberId: n.member_id ?? undefined,
-    date: n.created_at.slice(0, 10),
-    description: n.body,
-  }));
-
-  return [...paymentItems, ...notificationItems]
-    .sort((a, b) => (a.date < b.date ? 1 : -1))
-    .slice(0, limit);
+export interface UpcomingCycle extends BillingCycle {
+  subscriptionName: string;
 }
 
-export interface MemberDetailResult {
-  member: Member;
-  payments: Payment[];
-}
-
-export async function getMemberDetail(id: string): Promise<MemberDetailResult | null> {
-  const supabase = await createClient();
-  const asOf = todayIso();
-
-  const [{ data: memberRow, error: memErr }, { data: coverageRows, error: covErr }] = await Promise.all([
-    supabase.from("members").select("*").eq("id", id).maybeSingle(),
-    supabase.rpc("member_coverage", { p_member_id: id, p_as_of: asOf }),
-  ]);
-
-  if (memErr) throw new Error(memErr.message);
-  if (!memberRow) return null;
-  if (covErr) throw new Error(covErr.message);
-
-  const coverage = coverageRows?.[0];
-
-  const { data: paymentRows, error: payErr } = await supabase
-    .from("payments")
-    .select("id, amount_cents, kind, method, paid_at, note, voids_payment_id, created_at")
-    .eq("member_id", id)
-    .order("created_at", { ascending: false });
-  if (payErr) throw new Error(payErr.message);
-
-  const { data: allocRows, error: allocErr } = await supabase
-    .from("coverage_allocations")
-    .select("payment_id, cycle_date, amount_cents")
-    .eq("member_id", id);
-  if (allocErr) throw new Error(allocErr.message);
-
-  const maxCycleByPayment = new Map<string, string>();
-  for (const a of allocRows ?? []) {
-    const current = maxCycleByPayment.get(a.payment_id);
-    if (!current || a.cycle_date > current) maxCycleByPayment.set(a.payment_id, a.cycle_date);
-  }
-
-  const voidedPaymentIds = new Set(
-    (paymentRows ?? [])
-      .filter((p) => p.kind === "void" && p.voids_payment_id)
-      .map((p) => p.voids_payment_id as string)
-  );
-
-  const payments: Payment[] = (paymentRows ?? [])
-    .filter((p) => p.kind === "payment")
-    .map((p) => {
-      const lastCycle = maxCycleByPayment.get(p.id);
-      const coversUntil = lastCycle ? addOneMonthToDateString(lastCycle) : p.paid_at;
-      return {
-        id: p.id,
-        memberId: id,
-        amount: centsToEuro(p.amount_cents),
-        date: p.paid_at,
-        method: p.method!,
-        note: p.note ?? undefined,
-        coversUntil,
-        voided: voidedPaymentIds.has(p.id),
-      };
-    });
-
-  const lastActivePayment = payments.find((p) => !p.voided);
-
-  const member: Member = {
-    id: memberRow.id,
-    name: memberRow.name,
-    monthlyShare: centsToEuro(memberRow.monthly_share_cents),
-    coveredUntil: coverage?.covered_until ?? asOf,
-    lastPaymentDate: lastActivePayment?.date ?? null,
-    lastPaymentAmount: lastActivePayment?.amount ?? null,
-    status: coverage ? statusFromCoverage(coverage.is_overdue, coverage.covered_until, asOf) : "in_ritardo",
-    joinedAt: memberRow.joined_at,
-    color: memberRow.color,
-  };
-
-  return { member, payments };
-}
-
-export async function getAllPayments(): Promise<Payment[]> {
+export async function getUpcomingCycles(limit = 30): Promise<UpcomingCycle[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("payments")
-    .select("id, member_id, amount_cents, kind, method, paid_at, note")
-    .eq("kind", "payment")
-    .order("paid_at", { ascending: false });
+    .from("billing_cycles")
+    .select("*, subscriptions(name)")
+    .in("status", ["upcoming", "current", "overdue"])
+    .order("renewal_date", { ascending: true })
+    .limit(limit);
   if (error) throw new Error(error.message);
 
-  return (data ?? []).map((p) => ({
-    id: p.id,
-    memberId: p.member_id,
-    amount: centsToEuro(p.amount_cents),
-    date: p.paid_at,
-    method: p.method!,
-    note: p.note ?? undefined,
-    coversUntil: p.paid_at,
+  return (data ?? []).map((c) => ({
+    id: c.id,
+    subscriptionId: c.subscription_id,
+    subscriptionName: (c.subscriptions as unknown as { name: string } | null)?.name ?? "Abbonamento",
+    periodStart: c.period_start,
+    periodEnd: c.period_end,
+    renewalDate: c.renewal_date,
+    priceAtCycle: c.price_at_cycle,
+    currency: c.currency,
+    expectedTotal: c.expected_total,
+    collectedTotal: c.collected_total,
+    status: c.status,
+  }));
+}
+
+export async function getEntitlement(): Promise<Entitlement> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { isPro: false, status: "free", currentPeriodEnd: null, cancelAtPeriodEnd: false };
+
+  const { data, error } = await supabase.rpc("get_current_entitlement", { p_user_id: user.id });
+  if (error) throw new Error(error.message);
+  const row = data?.[0];
+
+  return {
+    isPro: row?.is_pro ?? false,
+    status: row?.status ?? "free",
+    currentPeriodEnd: row?.current_period_end ?? null,
+    cancelAtPeriodEnd: row?.cancel_at_period_end ?? false,
+  };
+}
+
+export async function getPaymentMethods(): Promise<PaymentMethod[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("payment_methods")
+    .select("id, label, method_type, is_default")
+    .is("archived_at", null)
+    .order("is_default", { ascending: false });
+  if (error) throw new Error(error.message);
+
+  return (data ?? []).map((m) => ({
+    id: m.id,
+    label: m.label,
+    methodType: m.method_type as PaymentMethod["methodType"],
+    isDefault: m.is_default,
   }));
 }

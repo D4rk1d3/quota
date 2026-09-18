@@ -8,3 +8,8 @@ npm-debug.log*
 tsconfig.tsbuildinfo
 supabase/.temp
 .DS_Store
+.env*
+
+# Config Firebase specifica del progetto di ognuno (vedi README): mai committare
+# la propria, ognuno mette la sua per compilare l'app Android.
+android/app/google-services.json

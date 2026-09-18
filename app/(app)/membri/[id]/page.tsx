@@ -1,16 +1,7 @@
-import { notFound } from "next/navigation";
-import { PageShell } from "@/components/quota/page-shell";
-import { MemberDetail } from "@/components/quota/member-detail";
-import { getMemberDetail } from "@/lib/supabase/queries";
+import { redirect } from "next/navigation";
 
-export default async function MemberDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const result = await getMemberDetail(id);
-  if (!result) notFound();
-
-  return (
-    <PageShell title={result.member.name} subtitle="Dettaglio membro">
-      <MemberDetail member={result.member} payments={result.payments} />
-    </PageShell>
-  );
+// I membri si gestiscono ora dentro /abbonamenti/[id] (vedi
+// SubscriptionDetailView), non su una propria pagina di dettaglio.
+export default function MemberDetailRedirectPage() {
+  redirect("/");
 }

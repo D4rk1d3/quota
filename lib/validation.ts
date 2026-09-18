@@ -1,76 +1,81 @@
 import { z } from "zod";
 
-export const paymentMethods = [
-  "bonifico",
+export const paymentMethodTypes = [
   "revolut",
-  "trade_republic",
-  "contanti",
+  "bank_transfer",
+  "cash",
   "satispay",
+  "trade_republic",
+  "paypal",
+  "other",
 ] as const;
 
+export const billingFrequencies = ["monthly", "quarterly", "yearly", "custom"] as const;
+export const shareTypes = ["equal", "fixed", "percentage"] as const;
+
+export const subscriptionCreateSchema = z.object({
+  name: z.string().trim().min(1, "Il nome è obbligatorio").max(120),
+  description: z.string().trim().max(500).optional(),
+  icon: z.string().trim().max(50).optional(),
+  currentPrice: z.number().positive("Il prezzo deve essere positivo").max(1_000_000),
+  billingFrequency: z.enum(billingFrequencies),
+  billingInterval: z.number().int().positive().max(36).default(1),
+  shareType: z.enum(shareTypes),
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data non valida"),
+});
+export type SubscriptionCreateInput = z.infer<typeof subscriptionCreateSchema>;
+
+export const subscriptionUpdateSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().trim().min(1).max(120).optional(),
+  description: z.string().trim().max(500).optional(),
+  currentPrice: z.number().positive().max(1_000_000).optional(),
+  status: z.enum(["active", "paused", "cancelled", "archived"]).optional(),
+});
+export type SubscriptionUpdateInput = z.infer<typeof subscriptionUpdateSchema>;
+
 export const memberCreateSchema = z.object({
-  name: z.string().trim().min(2, "Il nome deve avere almeno 2 caratteri").max(120),
-  email: z.string().trim().email().optional(),
-  color: z
+  subscriptionId: z.string().uuid(),
+  name: z.string().trim().min(1, "Il nome è obbligatorio").max(120),
+  email: z.string().trim().email().optional().or(z.literal("")),
+  phone: z.string().trim().max(30).optional(),
+  avatarColor: z
     .string()
     .trim()
     .regex(/^#[0-9a-fA-F]{6}$/, "Colore non valido")
     .optional(),
-  monthlyShareCents: z.number().int().positive().max(1_000_000).optional(),
-  notes: z.string().trim().max(500).optional(),
+  defaultShare: z.number().positive().max(1_000_000).optional(),
 });
 export type MemberCreateInput = z.infer<typeof memberCreateSchema>;
 
 export const memberUpdateSchema = z.object({
   id: z.string().uuid(),
-  name: z.string().trim().min(2).max(120).optional(),
-  email: z.string().trim().email().optional(),
-  color: z
-    .string()
-    .trim()
-    .regex(/^#[0-9a-fA-F]{6}$/)
-    .optional(),
-  monthlyShareCents: z.number().int().positive().max(1_000_000).optional(),
-  active: z.boolean().optional(),
-  notes: z.string().trim().max(500).optional(),
+  name: z.string().trim().min(1).max(120).optional(),
+  email: z.string().trim().email().optional().or(z.literal("")),
+  phone: z.string().trim().max(30).optional(),
+  defaultShare: z.number().positive().max(1_000_000).optional(),
+  status: z.enum(["active", "paused", "removed"]).optional(),
 });
 export type MemberUpdateInput = z.infer<typeof memberUpdateSchema>;
 
-export const memberIdSchema = z.object({ id: z.string().uuid() });
-
 export const recordPaymentSchema = z.object({
-  memberId: z.string().uuid(),
-  amountCents: z
-    .number()
-    .int("L'importo deve essere in centesimi interi")
-    .positive("L'importo deve essere maggiore di zero")
-    .max(100_000, "Importo troppo alto"),
-  method: z.enum(paymentMethods),
-  paidAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data non valida"),
+  chargeId: z.string().uuid(),
+  amount: z.number().positive("L'importo deve essere positivo").max(100_000),
+  paymentMethodId: z.string().uuid().optional(),
+  paidAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data non valida").optional(),
   note: z.string().trim().max(500).optional(),
 });
 export type RecordPaymentInput = z.infer<typeof recordPaymentSchema>;
 
-export const voidPaymentSchema = z.object({
+export const reversePaymentSchema = z.object({
   paymentId: z.string().uuid(),
-  note: z.string().trim().min(3, "Spiega il motivo dell'annullamento").max(500),
+  reason: z.string().trim().min(3, "Spiega il motivo dello storno").max(500),
 });
-export type VoidPaymentInput = z.infer<typeof voidPaymentSchema>;
+export type ReversePaymentInput = z.infer<typeof reversePaymentSchema>;
 
-export const updateSubscriptionSchema = z.object({
-  monthlyCostCents: z.number().int().positive().max(1_000_000),
-  billingDay: z.number().int().min(1).max(28),
-  memberQuotaCents: z.number().int().positive().max(1_000_000),
+export const paymentMethodCreateSchema = z.object({
+  label: z.string().trim().min(1, "Serve un nome per il metodo").max(120),
+  methodType: z.enum(paymentMethodTypes),
+  isDefault: z.boolean().optional(),
 });
-export type UpdateSubscriptionInput = z.infer<typeof updateSubscriptionSchema>;
-
-export const adjustPaymentSchema = z.object({
-  paymentId: z.string().uuid(),
-  deltaCents: z
-    .number()
-    .int("Il delta deve essere in centesimi interi")
-    .refine((v) => v !== 0, "Il delta non può essere zero")
-    .refine((v) => Math.abs(v) <= 100_000, "Delta troppo alto"),
-  note: z.string().trim().min(3, "Spiega il motivo della rettifica").max(500),
-});
-export type AdjustPaymentInput = z.infer<typeof adjustPaymentSchema>;
+export type PaymentMethodCreateInput = z.infer<typeof paymentMethodCreateSchema>;

@@ -1,13 +1,15 @@
 import { Badge } from "@/components/ui/badge";
-import type { MemberStatus } from "@/lib/types";
-import { statusLabel } from "@/lib/domain";
+import type { ChargeStatus } from "@/lib/types";
+import { chargeStatusLabel } from "@/lib/domain";
 
-const VARIANT: Record<MemberStatus, "accent" | "amber" | "brick"> = {
-  regolare: "accent",
-  in_scadenza: "amber",
-  in_ritardo: "brick",
+const VARIANT: Record<ChargeStatus, "accent" | "amber" | "brick" | "neutral"> = {
+  paid: "accent",
+  partial: "amber",
+  overdue: "brick",
+  credit: "accent",
+  scheduled: "neutral",
 };
 
-export function StatusBadge({ status }: { status: MemberStatus }) {
-  return <Badge variant={VARIANT[status]}>{statusLabel(status)}</Badge>;
+export function ChargeStatusBadge({ status }: { status: ChargeStatus }) {
+  return <Badge variant={VARIANT[status]}>{chargeStatusLabel(status)}</Badge>;
 }

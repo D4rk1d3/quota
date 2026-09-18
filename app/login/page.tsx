@@ -24,7 +24,7 @@ export default function LoginPage() {
             Quota
           </h1>
           <p className="text-[13px] text-[var(--text-secondary)]">
-            Accesso riservato all&apos;amministratore del gruppo Spotify Family.
+            Dividi gli abbonamenti in comune col tuo gruppo, senza fogli di calcolo.
           </p>
         </div>
 
@@ -40,7 +40,7 @@ export default function LoginPage() {
           ) : (
             <form action={formAction} className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="email">Email amministratore</Label>
+                <Label htmlFor="email">La tua email</Label>
                 <Input
                   id="email"
                   name="email"

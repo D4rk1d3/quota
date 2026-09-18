@@ -2,17 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { checkFreeTierLimit } from "@/lib/actions/entitlements";
 import {
   memberCreateSchema,
-  memberIdSchema,
   memberUpdateSchema,
   type MemberCreateInput,
   type MemberUpdateInput,
 } from "@/lib/validation";
-
-export type ActionResult<T = undefined> =
-  | { ok: true; data: T }
-  | { ok: false; error: string };
+import type { ActionResult } from "@/lib/actions/types";
 
 export async function createMember(input: MemberCreateInput): Promise<ActionResult<{ id: string }>> {
   const parsed = memberCreateSchema.safeParse(input);
@@ -21,19 +18,24 @@ export async function createMember(input: MemberCreateInput): Promise<ActionResu
   }
 
   const supabase = await createClient();
+
+  const limitError = await checkFreeTierLimit(supabase, "member", parsed.data.subscriptionId);
+  if (limitError) return { ok: false, error: limitError };
+
   const { data, error } = await supabase
-    .from("members")
+    .from("subscription_members")
     .insert({
+      subscription_id: parsed.data.subscriptionId,
       name: parsed.data.name,
-      email: parsed.data.email,
-      color: parsed.data.color,
-      monthly_share_cents: parsed.data.monthlyShareCents,
-      notes: parsed.data.notes,
+      email: parsed.data.email || null,
+      phone: parsed.data.phone || null,
+      avatar_color: parsed.data.avatarColor,
+      default_share: parsed.data.defaultShare,
     })
     .select("id")
     .single();
 
-  if (error) return { ok: false, error: "Impossibile aggiungere il membro." };
+  if (error || !data) return { ok: false, error: "Impossibile aggiungere il membro." };
 
   revalidatePath("/", "layout");
   return { ok: true, data: { id: data.id } };
@@ -48,14 +50,13 @@ export async function updateMember(input: MemberUpdateInput): Promise<ActionResu
 
   const supabase = await createClient();
   const { error } = await supabase
-    .from("members")
+    .from("subscription_members")
     .update({
       ...(rest.name !== undefined ? { name: rest.name } : {}),
-      ...(rest.email !== undefined ? { email: rest.email } : {}),
-      ...(rest.color !== undefined ? { color: rest.color } : {}),
-      ...(rest.monthlyShareCents !== undefined ? { monthly_share_cents: rest.monthlyShareCents } : {}),
-      ...(rest.active !== undefined ? { active: rest.active } : {}),
-      ...(rest.notes !== undefined ? { notes: rest.notes } : {}),
+      ...(rest.email !== undefined ? { email: rest.email || null } : {}),
+      ...(rest.phone !== undefined ? { phone: rest.phone || null } : {}),
+      ...(rest.defaultShare !== undefined ? { default_share: rest.defaultShare } : {}),
+      ...(rest.status !== undefined ? { status: rest.status } : {}),
     })
     .eq("id", id);
 
@@ -65,13 +66,13 @@ export async function updateMember(input: MemberUpdateInput): Promise<ActionResu
   return { ok: true, data: undefined };
 }
 
-/** "Rimuovere" un membro disattiva il record: preserva lo storico pagamenti (FK RESTRICT). */
-export async function deactivateMember(input: { id: string }): Promise<ActionResult> {
-  const parsed = memberIdSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: "ID non valido" };
-
+/** "Rimuovere" un membro lo segna come removed: preserva lo storico pagamenti (FK). */
+export async function removeMember(input: { id: string }): Promise<ActionResult> {
   const supabase = await createClient();
-  const { error } = await supabase.from("members").update({ active: false }).eq("id", parsed.data.id);
+  const { error } = await supabase
+    .from("subscription_members")
+    .update({ status: "removed", left_at: new Date().toISOString() })
+    .eq("id", input.id);
   if (error) return { ok: false, error: "Impossibile rimuovere il membro." };
 
   revalidatePath("/", "layout");
