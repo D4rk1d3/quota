@@ -227,6 +227,8 @@ struct SubscriptionDetailView: View {
                         .font(.system(size: 13)).foregroundStyle(Color.qTextSecondary).monospacedDigit()
                 }
                 Spacer()
+                ShareLink(item: statusText(charge, name: name)) { Image(systemName: "square.and.arrow.up") }
+                    .buttonStyle(.qSecondary).help("Condividi lo stato con \(name)")
                 if !charge.isSettled {
                     Button { sendReminder(charge, name: name) } label: { Image(systemName: "bell") }
                         .buttonStyle(.qSecondary).help("Copia il promemoria negli appunti")
@@ -247,6 +249,19 @@ struct SubscriptionDetailView: View {
             }
         }
         .padding(.vertical, 12)
+    }
+
+    private func statusText(_ charge: Charge, name: String) -> String {
+        let paid = max(0, charge.expectedAmount - charge.remainingAmount)
+        var text = "Quota — \(subscription.name)\nCiao \(name), ecco il tuo stato.\n"
+        text += "Dovuto: \(formatMoney(charge.expectedAmount, currency: charge.currency))\n"
+        text += "Pagato: \(formatMoney(paid, currency: charge.currency))\n"
+        if charge.remainingAmount > 0.005 {
+            text += "Resta da pagare: \(formatMoney(charge.remainingAmount, currency: charge.currency)) entro il \(formatIsoDate(charge.dueDate))."
+        } else {
+            text += "Tutto in regola, grazie!"
+        }
+        return text
     }
 
     private func monthName(_ iso: String) -> String {
