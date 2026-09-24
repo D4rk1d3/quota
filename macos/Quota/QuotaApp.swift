@@ -12,7 +12,9 @@ struct QuotaApp: App {
                 .onOpenURL { url in
                     Task { await auth.handle(url: url) }
                 }
-                .frame(minWidth: 720, minHeight: 480)
+                .frame(minWidth: 860, minHeight: 560)
         }
+        .defaultSize(width: 1120, height: 780)
+        .windowToolbarStyle(.unified(showsTitle: false))
     }
 }

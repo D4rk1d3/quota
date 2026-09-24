@@ -88,7 +88,51 @@ final class QuotaService {
         return result
     }
 
+    func currentCycle(subscriptionId: UUID) async throws -> BillingCycle? {
+        let rows: [BillingCycle] = try await client.from("billing_cycles")
+            .select("id, period_start, period_end, renewal_date, expected_total, collected_total, currency, status")
+            .eq("subscription_id", value: subscriptionId)
+            .in("status", values: ["current", "overdue", "upcoming"])
+            .order("period_start", ascending: true).limit(1).execute().value
+        return rows.first
+    }
+
+    func paymentMethods() async throws -> [PaymentMethodItem] {
+        try await client.from("payment_methods")
+            .select("id, label, method_type, is_default")
+            .is("archived_at", value: nil)
+            .order("is_default", ascending: false).execute().value
+    }
+
+    func activity(limit: Int = 60) async throws -> [ActivityItem] {
+        try await client.from("activity_log")
+            .select("id, event_type, metadata, created_at")
+            .order("created_at", ascending: false).limit(limit).execute().value
+    }
+
+    func renewals() async throws -> [Renewal] {
+        try await client.from("billing_cycles")
+            .select("id, renewal_date, status, subscriptions(name)")
+            .in("status", values: ["upcoming", "current", "overdue"])
+            .order("renewal_date", ascending: true).limit(120).execute().value
+    }
+
     // MARK: Scrittura
+
+    func createPaymentMethod(label: String, type: String) async throws {
+        struct New: Encodable { let organizer_id: UUID; let label: String; let method_type: String }
+        do {
+            try await client.from("payment_methods")
+                .insert(New(organizer_id: try currentUserId(), label: label, method_type: type)).execute()
+        } catch { throw QuotaError.from(error) }
+    }
+
+    func archivePaymentMethod(_ id: UUID) async throws {
+        struct Patch: Encodable { let archived_at: String }
+        try await client.from("payment_methods")
+            .update(Patch(archived_at: ISO8601DateFormatter().string(from: Date())))
+            .eq("id", value: id).execute()
+    }
 
     func createSubscription(name: String, price: Double, frequency: String, shareType: String, startDate: String) async throws {
         do {

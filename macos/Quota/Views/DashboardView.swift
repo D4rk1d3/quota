@@ -1,132 +1,118 @@
 import SwiftUI
-import AppKit
 
 struct DashboardView: View {
-    @Environment(AuthStore.self) private var auth
-    let userId: UUID
-
-    @State private var summary = DashboardSummary.empty
-    @State private var subscriptions: [Subscription] = []
-    @State private var entitlement = Entitlement.free
-    @State private var loading = true
-    @State private var errorMessage: String?
-    @State private var showingAdd = false
+    let model: AppModel
+    var onOpen: (Subscription) -> Void
 
     var body: some View {
-        NavigationStack {
-            List {
-                Section {
-                    HStack(spacing: 24) {
-                        metric("Incassato", formatMoney(summary.totalCollected),
-                               "su \(formatMoney(summary.totalExpected)) attesi")
-                        metric("Da recuperare", formatMoney(summary.totalOutstanding),
-                               "\(summary.overdueCount) in ritardo")
-                        metric("Pagamenti", String(summary.paymentsCount),
-                               summary.nextRenewalDate.map { "Prossimo rinnovo: \(formatIsoDate($0))" } ?? "Nessun rinnovo")
-                    }
-                    .padding(.vertical, 4)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                QPageHeader(title: "Dashboard") {
+                    Text(formatLongToday()).font(.system(size: 14)).foregroundStyle(Color.qTextSecondary)
+                }
+                if let error = model.errorMessage { QErrorBanner(message: error) }
+
+                if let sub = model.nextSubscription {
+                    HeroCard(subscription: sub, cycle: model.heroCycle) { onOpen(sub) }
                 }
 
-                Section("Abbonamenti") {
-                    if subscriptions.isEmpty && !loading {
-                        Text("Nessun abbonamento ancora. Aggiungi il primo.").foregroundStyle(.secondary)
-                    }
-                    ForEach(subscriptions) { sub in
-                        NavigationLink(value: sub) {
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    Text(sub.name).font(.headline)
-                                    Text("Rinnovo \(formatIsoDate(sub.nextRenewalDate))")
-                                        .font(.caption).foregroundStyle(.secondary)
+                HStack(spacing: 16) {
+                    MetricCard(label: "Incassato", value: formatMoney(model.summary.totalCollected),
+                               hint: "su \(formatMoney(model.summary.totalExpected)) attesi", tint: .qAccentText)
+                    MetricCard(label: "Da recuperare", value: formatMoney(model.summary.totalOutstanding),
+                               hint: model.summary.overdueCount == 0 ? "Nessun ritardo" : "\(model.summary.overdueCount) in ritardo",
+                               tint: model.summary.overdueCount == 0 ? .qTextPrimary : .qRed)
+                }
+
+                QSectionLabel(title: "Abbonamenti", trailing: "\(model.subscriptions.count)")
+                if model.subscriptions.isEmpty && !model.loading {
+                    QEmptyState(icon: "rectangle.stack.badge.plus", title: "Nessun abbonamento ancora",
+                                message: "Aggiungilo dalla sezione Abbonamenti per iniziare.").qCard()
+                } else {
+                    QList {
+                        ForEach(Array(model.subscriptions.enumerated()), id: \.element.id) { index, sub in
+                            if index > 0 { QDivider() }
+                            Button { onOpen(sub) } label: {
+                                QRow(title: sub.name, subtitle: "Rinnovo \(formatIsoDate(sub.nextRenewalDate))", showsChevron: true) {
+                                    QAvatar(name: sub.name)
+                                } trailing: {
+                                    Text(formatMoney(sub.currentPrice, currency: sub.currency))
+                                        .font(.system(size: 14, weight: .semibold)).monospacedDigit()
                                 }
-                                Spacer()
-                                Text(formatMoney(sub.currentPrice, currency: sub.currency))
-                            }
+                            }.buttonStyle(.plain)
                         }
                     }
                 }
-
-                if !entitlement.isPro {
-                    Section("Piano") {
-                        UpgradeRow()
-                    }
-                }
-
-                if let errorMessage {
-                    Text(errorMessage).foregroundStyle(.red)
-                }
             }
-            .navigationTitle("Quota")
-            .navigationDestination(for: Subscription.self) { sub in
-                SubscriptionDetailView(subscription: sub, onChange: { Task { await load() } })
-            }
-            .toolbar {
-                ToolbarItem {
-                    Button("Nuovo abbonamento", systemImage: "plus") { showingAdd = true }
-                }
-                ToolbarItem {
-                    Text(entitlement.isPro ? "Pro" : "Gratuito").font(.caption).foregroundStyle(.secondary)
-                }
-                ToolbarItem {
-                    Button("Esci") { Task { await auth.signOut() } }
-                }
-            }
-            .sheet(isPresented: $showingAdd) {
-                AddSubscriptionSheet { await load() }
-            }
+            .padding(28)
         }
-        .task { await load() }
-        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
-            Task { await load() }
-        }
-    }
-
-    private func metric(_ label: String, _ value: String, _ hint: String) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(label).font(.caption).foregroundStyle(.secondary)
-            Text(value).font(.title2.bold())
-            Text(hint).font(.caption2).foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private func load() async {
-        do {
-            let service = QuotaService.shared
-            async let s = service.dashboard()
-            async let subs = service.subscriptions()
-            async let e = service.entitlement(userId: userId)
-            (summary, subscriptions, entitlement) = try await (s, subs, e)
-            errorMessage = nil
-        } catch {
-            errorMessage = "Errore nel caricamento: \(error.localizedDescription)"
-        }
-        loading = false
+        .refreshable { await model.refresh() }
     }
 }
 
-struct UpgradeRow: View {
-    @State private var busy = false
-    @State private var errorMessage: String?
+private struct HeroCard: View {
+    let subscription: Subscription
+    let cycle: BillingCycle?
+    var onOpen: () -> Void
+
+    private var missing: Double { max(0, (cycle?.expectedTotal ?? 0) - (cycle?.collectedTotal ?? 0)) }
+    private var progress: Double {
+        guard let cycle, cycle.expectedTotal > 0 else { return 0 }
+        return cycle.collectedTotal / cycle.expectedTotal
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Il piano gratuito include 1 abbonamento con fino a 6 membri. Passa a Pro per averne senza limiti.")
-                .font(.callout)
-            Button(busy ? "Un attimo…" : "Passa a Pro") {
-                busy = true
-                Task {
-                    do {
-                        NSWorkspace.shared.open(try await QuotaService.shared.checkoutURL())
-                    } catch {
-                        errorMessage = error.localizedDescription
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .top) {
+                Text("PROSSIMO ADDEBITO").font(.system(size: 11, weight: .semibold)).tracking(0.6)
+                    .foregroundStyle(Color.qTextSecondary)
+                Spacer()
+                if cycle != nil {
+                    if missing > 0.005 {
+                        QBadge(label: "Mancano \(formatMoney(missing, currency: subscription.currency))", icon: "clock", color: .qAmber)
+                    } else {
+                        QBadge(label: "Fondo coperto", icon: "checkmark", color: .qAccentText)
                     }
-                    busy = false
                 }
             }
-            .buttonStyle(.borderedProminent)
-            .disabled(busy)
-            if let errorMessage { Text(errorMessage).foregroundStyle(.red).font(.caption) }
+            Text(formatMoney(subscription.currentPrice, currency: subscription.currency))
+                .font(.system(size: 40, weight: .bold)).monospacedDigit().padding(.top, 10)
+            Text("\(subscription.name) · \(formatIsoDate(subscription.nextRenewalDate)) · \(Iso.relative(subscription.nextRenewalDate))")
+                .font(.system(size: 14)).foregroundStyle(Color.qTextSecondary).padding(.top, 2)
+
+            if let cycle {
+                HStack {
+                    Text("Fondo coperto").font(.system(size: 13)).foregroundStyle(Color.qTextSecondary)
+                    Spacer()
+                    Text("\(formatMoney(cycle.collectedTotal, currency: cycle.currency)) / \(formatMoney(cycle.expectedTotal, currency: cycle.currency))")
+                        .font(.system(size: 13)).foregroundStyle(Color.qTextSecondary).monospacedDigit()
+                }.padding(.top, 20)
+                QProgressBar(value: progress).padding(.top, 8)
+            }
+
+            Button(action: onOpen) {
+                Label("Apri \(subscription.name)", systemImage: "plus").frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.qPrimaryLarge).padding(.top, 22)
         }
+        .padding(24)
+        .qCard(radius: QRadius.hero)
+    }
+}
+
+private struct MetricCard: View {
+    let label: String
+    let value: String
+    let hint: String
+    let tint: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(label.uppercased()).font(.system(size: 11, weight: .semibold)).tracking(0.6).foregroundStyle(Color.qTextSecondary)
+            Text(value).font(.system(size: 26, weight: .bold)).monospacedDigit().foregroundStyle(tint)
+            Text(hint).font(.system(size: 12)).foregroundStyle(Color.qTextSecondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(20).qCard()
     }
 }

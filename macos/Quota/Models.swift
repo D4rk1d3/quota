@@ -162,3 +162,86 @@ enum QuotaError: LocalizedError {
         return .message("Operazione non riuscita. Riprova.")
     }
 }
+
+struct PaymentMethodItem: Decodable, Identifiable, Hashable, Sendable {
+    let id: UUID
+    let label: String
+    let methodType: String
+    let isDefault: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case id, label
+        case methodType = "method_type"
+        case isDefault = "is_default"
+    }
+
+    var typeLabel: String {
+        switch methodType {
+        case "revolut": "Revolut"
+        case "bank_transfer": "Bonifico"
+        case "cash": "Contanti"
+        case "satispay": "Satispay"
+        case "trade_republic": "Trade Republic"
+        case "paypal": "PayPal"
+        default: "Altro"
+        }
+    }
+}
+
+struct ActivityItem: Decodable, Identifiable, Hashable, Sendable {
+    let id: UUID
+    let eventType: String
+    let amount: Double?
+    let reason: String?
+    let createdAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case id, metadata
+        case eventType = "event_type"
+        case createdAt = "created_at"
+    }
+
+    private struct Meta: Decodable { let amount: Double?; let reason: String? }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(UUID.self, forKey: .id)
+        eventType = try c.decode(String.self, forKey: .eventType)
+        createdAt = try c.decode(Date.self, forKey: .createdAt)
+        let meta = try? c.decode(Meta.self, forKey: .metadata)
+        amount = meta?.amount
+        reason = meta?.reason
+    }
+
+    var title: String {
+        switch eventType {
+        case "payment_recorded": "Pagamento registrato"
+        case "payment_reversed": "Pagamento stornato"
+        case "cycle_created": "Nuovo ciclo di fatturazione"
+        default: eventType.replacingOccurrences(of: "_", with: " ")
+        }
+    }
+
+    var icon: String {
+        switch eventType {
+        case "payment_recorded": "checkmark.circle"
+        case "payment_reversed": "arrow.uturn.backward.circle"
+        case "cycle_created": "calendar.badge.plus"
+        default: "clock"
+        }
+    }
+}
+
+struct SubscriptionName: Decodable, Hashable, Sendable { let name: String }
+
+struct Renewal: Decodable, Identifiable, Hashable, Sendable {
+    let id: UUID
+    let renewalDate: String
+    let status: String
+    let subscriptions: SubscriptionName?
+
+    enum CodingKeys: String, CodingKey {
+        case id, status, subscriptions
+        case renewalDate = "renewal_date"
+    }
+}

@@ -2,7 +2,7 @@ name: Quota
 options:
   bundleIdPrefix: app.quota
   deploymentTarget:
-    macOS: "14.0"
+    macOS: "15.0"
   createIntermediateGroups: true
 packages:
   Supabase:

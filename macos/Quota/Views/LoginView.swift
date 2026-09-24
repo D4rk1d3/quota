@@ -8,32 +8,43 @@ struct LoginView: View {
     @State private var errorMessage: String?
 
     var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "creditcard.circle.fill")
-                .font(.system(size: 48))
-                .foregroundStyle(.tint)
-            Text("Quota").font(.largeTitle.bold())
-            Text("Dividi gli abbonamenti in comune col tuo gruppo.")
-                .foregroundStyle(.secondary)
+        VStack(spacing: 0) {
+            Image(systemName: "creditcard.fill")
+                .font(.system(size: 26, weight: .bold)).foregroundStyle(.white)
+                .frame(width: 64, height: 64)
+                .background(Color.qAccent, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+            Text("Quota").font(.system(size: 34, weight: .bold)).padding(.top, 20)
+            Text("Dividi gli abbonamenti in comune col tuo gruppo, senza fogli di calcolo.")
+                .font(.system(size: 15)).foregroundStyle(Color.qTextSecondary)
+                .multilineTextAlignment(.center).padding(.top, 6)
 
-            if sent {
-                Text("Controlla la posta: apri il link per accedere.")
-                    .multilineTextAlignment(.center)
-            } else {
-                TextField("La tua email", text: $email)
-                    .textFieldStyle(.roundedBorder)
-                    .frame(maxWidth: 280)
-                    .onSubmit(send)
-                Button(sending ? "Invio…" : "Invia link di accesso", action: send)
-                    .buttonStyle(.borderedProminent)
+            VStack(spacing: 14) {
+                if sent {
+                    VStack(spacing: 6) {
+                        Image(systemName: "envelope.badge").font(.system(size: 24)).foregroundStyle(Color.qAccentText)
+                        Text("Controlla la posta").font(.system(size: 16, weight: .semibold))
+                        Text("Abbiamo inviato un link a \(email). Aprilo per accedere.")
+                            .font(.system(size: 13)).foregroundStyle(Color.qTextSecondary).multilineTextAlignment(.center)
+                    }
+                } else {
+                    TextField("La tua email", text: $email)
+                        .textFieldStyle(.plain).font(.system(size: 15))
+                        .padding(.horizontal, 16).frame(height: 48)
+                        .background(Color.qTextPrimary.opacity(0.06), in: RoundedRectangle(cornerRadius: QRadius.input, style: .continuous))
+                        .onSubmit(send)
+                    Button(action: send) {
+                        Text(sending ? "Invio…" : "Invia link di accesso").frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.qPrimaryLarge)
                     .disabled(sending || email.isEmpty)
+                    if let errorMessage { QErrorBanner(message: errorMessage) }
+                }
             }
-
-            if let errorMessage {
-                Text(errorMessage).foregroundStyle(.red).font(.callout)
-            }
+            .padding(24).frame(width: 380)
+            .qCard(radius: QRadius.hero).padding(.top, 32)
         }
         .padding(40)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private func send() {
@@ -44,7 +55,7 @@ struct LoginView: View {
                 try await auth.sendMagicLink(email: email.trimmingCharacters(in: .whitespaces))
                 sent = true
             } catch {
-                errorMessage = "Impossibile inviare il link. Riprova."
+                errorMessage = "Impossibile inviare il link. Riprova tra qualche minuto."
             }
             sending = false
         }
