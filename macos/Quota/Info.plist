@@ -23,7 +23,7 @@
 			<string>app.quota.mac</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>quota</string>
+				<string>app.quota.mac</string>
 			</array>
 		</dict>
 	</array>

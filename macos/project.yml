@@ -33,4 +33,4 @@ targets:
       properties:
         CFBundleURLTypes:
           - CFBundleURLName: app.quota.mac
-            CFBundleURLSchemes: [quota]
+            CFBundleURLSchemes: [app.quota.mac]
