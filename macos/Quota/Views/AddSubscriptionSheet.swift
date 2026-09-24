@@ -13,61 +13,68 @@ struct AddSubscriptionSheet: View {
     @State private var errorMessage: String?
 
     var body: some View {
-        Form {
-            TextField("Nome", text: $name)
-            TextField("Prezzo (€)", text: $price)
-            Picker("Frequenza", selection: $frequency) {
-                Text("Mensile").tag("monthly")
-                Text("Trimestrale").tag("quarterly")
-                Text("Annuale").tag("yearly")
-            }
-            Picker("Divisione", selection: $shareType) {
-                Text("In parti uguali").tag("equal")
-                Text("Importo fisso").tag("fixed")
-                Text("Percentuale").tag("percentage")
-            }
-            DatePicker("Data di inizio", selection: $startDate, displayedComponents: .date)
-            if let errorMessage { Text(errorMessage).foregroundStyle(.red) }
+        QSheet(title: "Nuovo abbonamento") {
+            SubscriptionFields(name: $name, price: $price, frequency: $frequency, shareType: $shareType, startDate: $startDate)
+            if let errorMessage { QErrorBanner(message: errorMessage) }
             HStack {
                 Spacer()
-                Button("Annulla") { dismiss() }
-                Button(busy ? "Salvataggio…" : "Crea", action: save)
-                    .buttonStyle(.borderedProminent)
-                    .disabled(busy || name.trimmingCharacters(in: .whitespaces).isEmpty || parsedPrice == nil)
+                Button("Annulla") { dismiss() }.buttonStyle(.qSecondary)
+                Button(busy ? "Salvataggio…" : "Crea", action: save).buttonStyle(.qPrimary)
+                    .disabled(busy || name.trimmingCharacters(in: .whitespaces).isEmpty || parsePrice(price) == nil)
             }
         }
-        .padding(24)
-        .frame(width: 420)
-    }
-
-    private var parsedPrice: Double? {
-        guard let value = Double(price.replacingOccurrences(of: ",", with: ".")), value > 0 else { return nil }
-        return value
     }
 
     private func save() {
-        guard let parsedPrice else { return }
+        guard let value = parsePrice(price) else { return }
         busy = true
         errorMessage = nil
         Task {
             do {
                 try await QuotaService.shared.createSubscription(
-                    name: name.trimmingCharacters(in: .whitespaces), price: parsedPrice,
-                    frequency: frequency, shareType: shareType, startDate: isoDay(startDate)
-                )
+                    name: name.trimmingCharacters(in: .whitespaces), price: value,
+                    frequency: frequency, shareType: shareType, startDate: Iso.string(startDate))
                 await onDone()
                 dismiss()
-            } catch {
-                errorMessage = error.localizedDescription
-            }
+            } catch { errorMessage = error.localizedDescription }
             busy = false
         }
     }
 }
 
-func isoDay(_ date: Date) -> String {
-    let f = DateFormatter()
-    f.dateFormat = "yyyy-MM-dd"
-    f.locale = Locale(identifier: "en_US_POSIX")
-    return f.string(from: date)
+func parsePrice(_ text: String) -> Double? {
+    guard let value = Double(text.replacingOccurrences(of: ",", with: ".")), value > 0 else { return nil }
+    return value
+}
+
+struct SubscriptionFields: View {
+    @Binding var name: String
+    @Binding var price: String
+    @Binding var frequency: String
+    @Binding var shareType: String
+    @Binding var startDate: Date
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            QField(label: "Nome") { TextField("Netflix, Spotify, palestra…", text: $name).qInput() }
+            HStack(spacing: 12) {
+                QField(label: "Prezzo (€)") { TextField("19,99", text: $price).qInput() }
+                QField(label: "Frequenza") {
+                    Picker("", selection: $frequency) {
+                        Text("Mensile").tag("monthly"); Text("Trimestrale").tag("quarterly"); Text("Annuale").tag("yearly")
+                    }.labelsHidden().frame(height: 48)
+                }
+            }
+            HStack(spacing: 12) {
+                QField(label: "Divisione") {
+                    Picker("", selection: $shareType) {
+                        Text("In parti uguali").tag("equal"); Text("Importo fisso").tag("fixed"); Text("Percentuale").tag("percentage")
+                    }.labelsHidden()
+                }
+                QField(label: "Data di inizio") {
+                    DatePicker("", selection: $startDate, displayedComponents: .date).labelsHidden()
+                }
+            }
+        }
+    }
 }

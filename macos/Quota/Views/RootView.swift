@@ -40,6 +40,8 @@ struct MainShell: View {
     @State var model: AppModel
     @State private var selection: SidebarItem? = .dashboard
     @State private var path: [Subscription] = []
+    @AppStorage("onboardingDone") private var onboardingDone = false
+    @State private var showOnboarding = false
 
     var body: some View {
         NavigationSplitView {
@@ -65,8 +67,9 @@ struct MainShell: View {
                 switch selection ?? .dashboard {
                 case .dashboard:
                     DashboardView(model: model) { sub in
-                        path = [sub]
+                        path = []
                         selection = .subscriptions
+                        Task { @MainActor in path = [sub] }
                     }
                 case .subscriptions: SubscriptionsView(model: model, path: $path)
                 case .calendar: CalendarView(model: model)
@@ -77,6 +80,12 @@ struct MainShell: View {
             .background(Color.qBackground)
             .toolbar(removing: .title)
         }
-        .task { await model.refresh() }
+        .task {
+            await model.refresh()
+            if !onboardingDone && model.subscriptions.isEmpty { showOnboarding = true }
+        }
+        .sheet(isPresented: $showOnboarding) {
+            OnboardingView(model: model) { onboardingDone = true; showOnboarding = false }
+        }
     }
 }

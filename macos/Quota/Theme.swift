@@ -57,6 +57,7 @@ struct QPillButtonStyle: ButtonStyle {
     enum Kind { case primary, secondary, destructive }
     var kind: Kind = .primary
     var large = false
+    @Environment(\.isEnabled) private var isEnabled
 
     func makeBody(configuration: Configuration) -> some View {
         let (bg, fg): (Color, Color) = switch kind {
@@ -71,6 +72,7 @@ struct QPillButtonStyle: ButtonStyle {
             .frame(height: large ? 52 : 34)
             .background(bg.opacity(configuration.isPressed ? 0.75 : 1), in: Capsule())
             .contentShape(Capsule())
+            .opacity(isEnabled ? 1 : 0.4)
     }
 }
 

@@ -134,18 +134,21 @@ final class QuotaService {
             .eq("id", value: id).execute()
     }
 
-    func createSubscription(name: String, price: Double, frequency: String, shareType: String, startDate: String) async throws {
+    @discardableResult
+    func createSubscription(name: String, price: Double, frequency: String, shareType: String, startDate: String) async throws -> UUID {
         do {
             let userId = try currentUserId()
             struct Params: Encodable { let p_date: String; let p_frequency: String; let p_interval: Int }
             let renewal: String = try await client.rpc("add_billing_period", params: Params(
                 p_date: startDate, p_frequency: frequency, p_interval: 1
             )).execute().value
-            try await client.from("subscriptions").insert(NewSubscription(
+            struct Created: Decodable { let id: UUID }
+            let created: Created = try await client.from("subscriptions").insert(NewSubscription(
                 organizer_id: userId, name: name, current_price: price,
                 billing_frequency: frequency, share_type: shareType,
                 start_date: startDate, next_renewal_date: renewal
-            )).execute()
+            )).select("id").single().execute().value
+            return created.id
         } catch { throw QuotaError.from(error) }
     }
 
@@ -171,10 +174,27 @@ final class QuotaService {
         } catch { throw QuotaError.from(error) }
     }
 
-    func recordPayment(chargeId: UUID, amount: Double) async throws {
-        struct Params: Encodable { let p_charge_id: UUID; let p_amount: Double }
+    func recordPayment(chargeId: UUID, amount: Double, methodId: UUID?, paidAt: Date, note: String?) async throws {
+        struct Params: Encodable {
+            let p_charge_id: UUID
+            let p_amount: Double
+            let p_payment_method_id: UUID?
+            let p_paid_at: String
+            let p_note: String?
+        }
         do {
-            try await client.rpc("record_payment", params: Params(p_charge_id: chargeId, p_amount: amount)).execute()
+            try await client.rpc("record_payment", params: Params(
+                p_charge_id: chargeId, p_amount: amount, p_payment_method_id: methodId,
+                p_paid_at: ISO8601DateFormatter().string(from: paidAt),
+                p_note: (note?.isEmpty ?? true) ? nil : note
+            )).execute()
+        } catch { throw QuotaError.from(error) }
+    }
+
+    func updateSubscription(id: UUID, name: String, price: Double) async throws {
+        struct Patch: Encodable { let name: String; let current_price: Double }
+        do {
+            try await client.from("subscriptions").update(Patch(name: name, current_price: price)).eq("id", value: id).execute()
         } catch { throw QuotaError.from(error) }
     }
 

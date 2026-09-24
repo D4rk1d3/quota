@@ -160,3 +160,47 @@ struct QEmptyState: View {
         .frame(maxWidth: .infinity).padding(32)
     }
 }
+
+/// Campo di testo stile mockup (fondo tenue, angoli 14, alto 48).
+struct QInputStyle: ViewModifier {
+    var height: CGFloat = 48
+    func body(content: Content) -> some View {
+        content
+            .textFieldStyle(.plain).font(.system(size: 15))
+            .padding(.horizontal, 16).frame(height: height)
+            .background(Color.qTextPrimary.opacity(0.06), in: RoundedRectangle(cornerRadius: QRadius.input, style: .continuous))
+    }
+}
+
+extension View { func qInput(height: CGFloat = 48) -> some View { modifier(QInputStyle(height: height)) } }
+
+struct QField<Content: View>: View {
+    let label: String
+    @ViewBuilder var content: () -> Content
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(label).font(.system(size: 12, weight: .medium)).foregroundStyle(Color.qTextSecondary)
+            content()
+        }
+    }
+}
+
+/// Contenitore dei modali: card #1C1C1E, angoli 26, titolo grande.
+struct QSheet<Content: View>: View {
+    let title: String
+    var subtitle: String?
+    var width: CGFloat = 440
+    @ViewBuilder var content: () -> Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(.system(size: 22, weight: .bold))
+                if let subtitle { Text(subtitle).font(.system(size: 14)).foregroundStyle(Color.qTextSecondary) }
+            }
+            content()
+        }
+        .padding(28).frame(width: width)
+        .background(Color.qSurface)
+    }
+}

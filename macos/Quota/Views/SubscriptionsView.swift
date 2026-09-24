@@ -53,31 +53,69 @@ struct SubscriptionsView: View {
 
 struct SubscriptionDetailView: View {
     let model: AppModel
-    let subscription: Subscription
+    @State var subscription: Subscription
 
     @State private var detail = SubscriptionDetail()
     @State private var errorMessage: String?
     @State private var newMemberName = ""
-    @State private var payingCharge: Charge?
+    @State private var selectedCycleId: UUID?
+    @State private var payingSelection: UUID?
     @State private var reversingPayment: Payment?
+    @State private var editing = false
 
     private var memberNames: [UUID: String] {
         Dictionary(uniqueKeysWithValues: detail.members.map { ($0.id, $0.name) })
+    }
+
+    private var orderedCycles: [BillingCycle] { detail.cycles.sorted { $0.periodStart < $1.periodStart } }
+    private var selectedCycle: BillingCycle? { orderedCycles.first { $0.id == selectedCycleId } }
+    private var cycleCharges: [Charge] {
+        guard let id = selectedCycle?.id else { return [] }
+        let order = Dictionary(uniqueKeysWithValues: detail.members.enumerated().map { ($1.id, $0) })
+        return detail.charges.filter { $0.billingCycleId == id }.sorted { (order[$0.memberId] ?? 0) < (order[$1.memberId] ?? 0) }
+    }
+    private var payable: [PayableCharge] {
+        cycleCharges.filter { !$0.isSettled }.map { PayableCharge(charge: $0, memberName: memberNames[$0.memberId] ?? "Membro") }
     }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 QPageHeader(title: subscription.name,
-                            subtitle: "\(formatMoney(subscription.currentPrice, currency: subscription.currency)) · rinnovo \(formatIsoDate(subscription.nextRenewalDate))")
+                            subtitle: "\(formatMoney(subscription.currentPrice, currency: subscription.currency)) · rinnova il \(formatIsoDate(subscription.nextRenewalDate))") {
+                    HStack(spacing: 10) {
+                        Button { editing = true } label: { Label("Modifica", systemImage: "pencil") }.buttonStyle(.qSecondary)
+                        Button { payingSelection = payable.first?.id } label: { Label("Registra pagamento", systemImage: "plus") }
+                            .buttonStyle(.qPrimary).disabled(payable.isEmpty)
+                    }
+                }
                 if let errorMessage { QErrorBanner(message: errorMessage) }
 
-                QSectionLabel(title: "Membri", trailing: "\(detail.members.count)")
+                if detail.cycles.isEmpty {
+                    QEmptyState(icon: "calendar.badge.plus", title: "Nessun ciclo di fatturazione",
+                                message: "Aggiungi i membri, poi genera il primo ciclo per iniziare a registrare i pagamenti.").qCard()
+                    Button("Genera il primo ciclo") {
+                        run { try await QuotaService.shared.generateCycle(subscriptionId: subscription.id, periodStart: subscription.startDate) }
+                    }
+                    .buttonStyle(.qPrimary).disabled(detail.members.isEmpty)
+                } else {
+                    cycleChips
+                    if let cycle = selectedCycle { cycleSummary(cycle) }
+                    QSectionLabel(title: "Membri — ciclo di \(selectedCycle.map { monthName($0.periodStart) } ?? "")")
+                    QList {
+                        ForEach(Array(cycleCharges.enumerated()), id: \.element.id) { index, charge in
+                            if index > 0 { QDivider() }
+                            chargeRow(charge)
+                        }
+                    }
+                }
+
+                QSectionLabel(title: "Gestisci membri", trailing: "\(detail.members.count)")
                 QList {
                     ForEach(Array(detail.members.enumerated()), id: \.element.id) { index, member in
                         if index > 0 { QDivider() }
                         QRow(title: member.name, subtitle: member.status == "active" ? nil : (member.status == "paused" ? "In pausa" : "Rimosso")) {
-                            QAvatar(name: member.name)
+                            QAvatar(name: member.name, size: 40)
                         } trailing: {
                             Menu {
                                 if member.status == "active" {
@@ -86,9 +124,7 @@ struct SubscriptionDetailView: View {
                                     Button("Riattiva") { setStatus(member, "active") }
                                 }
                                 Button("Rimuovi", role: .destructive) { setStatus(member, "removed") }
-                            } label: {
-                                Image(systemName: "ellipsis").foregroundStyle(Color.qTextSecondary)
-                            }
+                            } label: { Image(systemName: "ellipsis").foregroundStyle(Color.qTextSecondary) }
                             .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
                         }
                     }
@@ -100,100 +136,131 @@ struct SubscriptionDetailView: View {
                             .disabled(newMemberName.trimmingCharacters(in: .whitespaces).isEmpty)
                     }.padding(.vertical, 12)
                 }
-
-                if detail.cycles.isEmpty {
-                    QEmptyState(icon: "calendar.badge.plus", title: "Nessun ciclo di fatturazione",
-                                message: "Genera il primo ciclo per iniziare a registrare i pagamenti.").qCard()
-                    Button("Genera il primo ciclo") {
-                        run { try await QuotaService.shared.generateCycle(subscriptionId: subscription.id, periodStart: subscription.startDate) }
-                    }
-                    .buttonStyle(.qPrimary).disabled(detail.members.isEmpty)
-                }
-
-                ForEach(detail.cycles) { cycle in cycleCard(cycle) }
             }
             .padding(28)
         }
         .task { await reload() }
-        .sheet(item: $payingCharge) { charge in
-            RecordPaymentSheet(memberName: memberNames[charge.memberId] ?? "Membro", charge: charge) {
-                await reload(); await model.refresh()
+        .sheet(isPresented: Binding(get: { payingSelection != nil }, set: { if !$0 { payingSelection = nil } })) {
+            if let selected = payingSelection {
+                RecordPaymentSheet(options: payable, selected: selected, methods: model.paymentMethods) {
+                    await reload(); await model.refresh()
+                }
             }
         }
         .sheet(item: $reversingPayment) { payment in
             ReversePaymentSheet(payment: payment) { await reload(); await model.refresh() }
         }
-    }
-
-    private func cycleCard(_ cycle: BillingCycle) -> some View {
-        let charges = detail.charges.filter { $0.billingCycleId == cycle.id }
-        let progress = cycle.expectedTotal > 0 ? cycle.collectedTotal / cycle.expectedTotal : 0
-        return VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("\(formatIsoShort(cycle.periodStart)) — \(formatIsoShort(cycle.periodEnd))")
-                        .font(.system(size: 16, weight: .semibold))
-                    Text(cycleStatus(cycle.status)).font(.system(size: 13)).foregroundStyle(Color.qTextSecondary)
-                }
-                Spacer()
-                Text("\(formatMoney(cycle.collectedTotal, currency: cycle.currency)) / \(formatMoney(cycle.expectedTotal, currency: cycle.currency))")
-                    .font(.system(size: 14, weight: .semibold)).monospacedDigit()
-            }
-            QProgressBar(value: progress).padding(.top, 12)
-            ForEach(charges) { charge in
-                QDivider().padding(.top, 8)
-                chargeRow(charge)
+        .sheet(isPresented: $editing) {
+            EditSubscriptionSheet(subscription: subscription) {
+                await model.refresh()
+                if let updated = model.subscriptions.first(where: { $0.id == subscription.id }) { subscription = updated }
+                await reload()
             }
         }
-        .padding(22).qCard()
+    }
+
+    private var cycleChips: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 10) {
+                ForEach(orderedCycles) { cycle in
+                    let selected = cycle.id == selectedCycleId
+                    Button { selectedCycleId = cycle.id } label: {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(monthName(cycle.periodStart) + (cycle.status == "current" ? " · attuale" : ""))
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(selected ? Color.qAccentText : Color.qTextSecondary)
+                            cycleBadge(cycle)
+                        }
+                        .padding(.horizontal, 16).padding(.vertical, 10)
+                        .background(selected ? Color.qAccent.opacity(0.10) : Color.qSurface,
+                                    in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(selected ? Color.qAccent.opacity(0.6) : Color.clear, lineWidth: 1))
+                    }.buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func cycleBadge(_ cycle: BillingCycle) -> some View {
+        switch cycle.status {
+        case "closed": QBadge(label: "Pagato", icon: "checkmark", color: .qAccentText)
+        case "overdue": QBadge(label: "In ritardo", icon: "exclamationmark", color: .qRed)
+        case "current": QBadge(label: "In scadenza", icon: "clock", color: .qAmber)
+        default: Text("In arrivo").font(.system(size: 11, weight: .medium)).foregroundStyle(Color.qTextTertiary)
+        }
+    }
+
+    private func cycleSummary(_ cycle: BillingCycle) -> some View {
+        let remaining = max(0, cycle.expectedTotal - cycle.collectedTotal)
+        let progress = cycle.expectedTotal > 0 ? cycle.collectedTotal / cycle.expectedTotal : 0
+        return HStack(alignment: .top, spacing: 16) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("CICLO DI \(monthName(cycle.periodStart).uppercased())").font(.system(size: 11, weight: .semibold)).tracking(0.6)
+                    .foregroundStyle(Color.qTextSecondary)
+                QProgressBar(value: progress)
+                Text("\(formatMoney(cycle.collectedTotal, currency: cycle.currency)) raccolti su \(formatMoney(cycle.expectedTotal, currency: cycle.currency))")
+                    .font(.system(size: 13)).foregroundStyle(Color.qTextSecondary).monospacedDigit()
+            }
+            .frame(maxWidth: .infinity, alignment: .leading).padding(20).qCard()
+            VStack(alignment: .leading, spacing: 4) {
+                Text("RIMANE DA INCASSARE").font(.system(size: 11, weight: .semibold)).tracking(0.6).foregroundStyle(Color.qTextSecondary)
+                Text(formatMoney(remaining, currency: cycle.currency)).font(.system(size: 26, weight: .bold)).monospacedDigit()
+                    .foregroundStyle(remaining > 0.005 ? Color.qAmber : Color.qAccentText)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading).padding(20).qCard()
+        }
     }
 
     private func chargeRow(_ charge: Charge) -> some View {
         let name = memberNames[charge.memberId] ?? "Membro"
+        let payments = detail.payments.filter { $0.chargeId == charge.id }
         return VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 12) {
-                QAvatar(name: name, size: 36)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(name).font(.system(size: 14, weight: .semibold))
-                    Text(formatMoney(charge.expectedAmount, currency: charge.currency))
-                        .font(.system(size: 12)).foregroundStyle(Color.qTextSecondary).monospacedDigit()
+            HStack(spacing: 14) {
+                QAvatar(name: name)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(name).font(.system(size: 15, weight: .semibold))
+                    Text(charge.chargeStatus == "partial"
+                         ? "\(formatMoney(charge.expectedAmount - charge.remainingAmount, currency: charge.currency)) / \(formatMoney(charge.expectedAmount, currency: charge.currency))"
+                         : formatMoney(charge.expectedAmount, currency: charge.currency))
+                        .font(.system(size: 13)).foregroundStyle(Color.qTextSecondary).monospacedDigit()
                 }
                 Spacer()
-                charge.badge
                 if !charge.isSettled {
-                    Button("Promemoria") { sendReminder(charge, name: name) }.buttonStyle(.qSecondary)
-                    Button("Registra") { payingCharge = charge }.buttonStyle(.qPrimary)
+                    Button { sendReminder(charge, name: name) } label: { Image(systemName: "bell") }
+                        .buttonStyle(.qSecondary).help("Copia il promemoria negli appunti")
+                    Button("Registra") { payingSelection = charge.id }.buttonStyle(.qSecondary)
                 }
+                charge.badge
             }
-            ForEach(detail.payments.filter { $0.chargeId == charge.id }) { payment in
+            ForEach(payments) { payment in
                 HStack(spacing: 8) {
                     Text("\(formatMoney(payment.amount, currency: payment.currency)) · \(formatIsoShort(String(payment.paidAt.prefix(10))))"
                          + (payment.paymentMethods.map { " · \($0.label)" } ?? ""))
                         .strikethrough(payment.status == "reversed")
                     if payment.status == "active" {
                         Button("Storna") { reversingPayment = payment }.buttonStyle(.link)
-                    } else {
-                        Text("stornato")
-                    }
+                    } else { Text("stornato") }
                 }
-                .font(.system(size: 12)).foregroundStyle(Color.qTextSecondary).padding(.leading, 48)
+                .font(.system(size: 12)).foregroundStyle(Color.qTextSecondary).padding(.leading, 58)
             }
         }
-        .padding(.top, 12)
+        .padding(.vertical, 12)
     }
 
-    private func cycleStatus(_ status: String) -> String {
-        switch status {
-        case "current": "In corso"
-        case "overdue": "In ritardo"
-        case "upcoming": "In arrivo"
-        default: "Chiuso"
-        }
+    private func monthName(_ iso: String) -> String {
+        guard let d = Iso.date(iso) else { return iso }
+        return d.formatted(.dateTime.month(.wide).locale(Locale(identifier: "it_IT"))).capitalized
     }
 
     private func reload() async {
         do {
             detail = try await QuotaService.shared.detail(subscriptionId: subscription.id)
+            if selectedCycle == nil {
+                selectedCycleId = (orderedCycles.first { $0.status == "overdue" } ?? orderedCycles.first { $0.status == "current" }
+                                   ?? orderedCycles.first { $0.status == "upcoming" } ?? orderedCycles.last)?.id
+            }
             errorMessage = nil
         } catch { errorMessage = "Errore nel caricamento." }
     }
