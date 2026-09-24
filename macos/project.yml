@@ -1,0 +1,36 @@
+name: Quota
+options:
+  bundleIdPrefix: app.quota
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+packages:
+  Supabase:
+    url: https://github.com/supabase/supabase-swift
+    from: 2.0.0
+targets:
+  Quota:
+    type: application
+    platform: macOS
+    sources: [Quota]
+    dependencies:
+      - package: Supabase
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.quota.mac
+        MARKETING_VERSION: 0.1.0
+        CURRENT_PROJECT_VERSION: 1
+        SWIFT_VERSION: 6.0
+        SWIFT_STRICT_CONCURRENCY: complete
+        ENABLE_HARDENED_RUNTIME: YES
+        CODE_SIGN_ENTITLEMENTS: Quota/Quota.entitlements
+        CODE_SIGN_STYLE: Automatic
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Quota
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.finance
+    info:
+      path: Quota/Info.plist
+      properties:
+        CFBundleURLTypes:
+          - CFBundleURLName: app.quota.mac
+            CFBundleURLSchemes: [quota]
