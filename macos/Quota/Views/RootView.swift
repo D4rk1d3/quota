@@ -22,6 +22,7 @@ enum SidebarItem: String, CaseIterable, Identifiable {
     case subscriptions = "Abbonamenti"
     case calendar = "Calendario"
     case activity = "Attività"
+    case analytics = "Analisi"
     case settings = "Impostazioni"
 
     var id: String { rawValue }
@@ -31,6 +32,7 @@ enum SidebarItem: String, CaseIterable, Identifiable {
         case .subscriptions: "rectangle.stack.person.crop"
         case .calendar: "calendar"
         case .activity: "clock"
+        case .analytics: "chart.bar"
         case .settings: "gearshape"
         }
     }
@@ -74,6 +76,7 @@ struct MainShell: View {
                 case .subscriptions: SubscriptionsView(model: model, path: $path)
                 case .calendar: CalendarView(model: model)
                 case .activity: ActivityView(model: model)
+                case .analytics: AnalyticsView(model: model)
                 case .settings: SettingsView(model: model)
                 }
             }

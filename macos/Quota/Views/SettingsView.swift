@@ -9,6 +9,10 @@ struct SettingsView: View {
     @State private var adding = false
     @State private var newLabel = ""
     @State private var newType = "revolut"
+    @State private var displayName = ""
+    @State private var daysBefore = 3
+    @State private var exporting = false
+    @State private var savedNote: String?
 
     private let types = [("revolut", "Revolut"), ("bank_transfer", "Bonifico"), ("cash", "Contanti"),
                          ("satispay", "Satispay"), ("trade_republic", "Trade Republic"), ("paypal", "PayPal"), ("other", "Altro")]
@@ -44,6 +48,41 @@ struct SettingsView: View {
                 }
                 .padding(22).frame(maxWidth: .infinity, alignment: .leading).qCard()
 
+                QSectionLabel(title: "Profilo")
+                VStack(alignment: .leading, spacing: 14) {
+                    QField(label: "Come ti chiami") { TextField("Il tuo nome", text: $displayName).qInput() }
+                    Button("Salva profilo", action: saveProfile).buttonStyle(.qPrimary)
+                }
+                .padding(22).frame(maxWidth: .infinity, alignment: .leading).qCard()
+
+                QSectionLabel(title: "Notifiche di rinnovo")
+                VStack(alignment: .leading, spacing: 14) {
+                    HStack {
+                        Text("Avvisami").font(.system(size: 15, weight: .semibold))
+                        Spacer()
+                        Picker("", selection: $daysBefore) {
+                            Text("Il giorno stesso").tag(0)
+                            ForEach([1, 2, 3, 5, 7], id: \.self) { Text("\($0) \($0 == 1 ? "giorno" : "giorni") prima").tag($0) }
+                        }.labelsHidden().frame(width: 170)
+                    }
+                    Text("Ricevi una notifica su questo Mac alle 9:00. Al primo salvataggio macOS ti chiede il permesso.")
+                        .font(.system(size: 13)).foregroundStyle(Color.qTextSecondary)
+                    Button("Salva preavviso", action: saveNotifications).buttonStyle(.qSecondary)
+                    if let savedNote { Text(savedNote).font(.system(size: 12)).foregroundStyle(Color.qAccentText) }
+                }
+                .padding(22).frame(maxWidth: .infinity, alignment: .leading).qCard()
+
+                QSectionLabel(title: "Esporta")
+                VStack(alignment: .leading, spacing: 14) {
+                    Text("Tutti i pagamenti registrati, compresi quelli stornati, con abbonamento, ciclo, membro e metodo.")
+                        .font(.system(size: 13)).foregroundStyle(Color.qTextSecondary)
+                    HStack(spacing: 10) {
+                        Button(exporting ? "Preparo…" : "Esporta CSV") { export(pdf: false) }.buttonStyle(.qSecondary).disabled(exporting)
+                        Button("Esporta PDF") { export(pdf: true) }.buttonStyle(.qSecondary).disabled(exporting)
+                    }
+                }
+                .padding(22).frame(maxWidth: .infinity, alignment: .leading).qCard()
+
                 QSectionLabel(title: "Metodi di pagamento")
                 QList {
                     ForEach(Array(model.paymentMethods.enumerated()), id: \.element.id) { index, m in
@@ -72,6 +111,49 @@ struct SettingsView: View {
                 }
             }
             .padding(28)
+        }
+        .onAppear {
+            displayName = model.profile.displayName ?? ""
+            daysBefore = model.profile.notifyDaysBefore
+        }
+    }
+
+    private func saveProfile() {
+        Task {
+            do {
+                try await QuotaService.shared.updateProfile(displayName: displayName.trimmingCharacters(in: .whitespaces), notifyDaysBefore: daysBefore)
+                await model.refresh()
+                savedNote = nil; errorMessage = nil
+            } catch { errorMessage = error.localizedDescription }
+        }
+    }
+
+    private func saveNotifications() {
+        Task {
+            _ = await NotificationScheduler.requestPermission()
+            do {
+                try await QuotaService.shared.updateProfile(displayName: displayName.trimmingCharacters(in: .whitespaces), notifyDaysBefore: daysBefore)
+                await model.refresh()
+                savedNote = "Preavviso salvato."
+                errorMessage = nil
+            } catch { errorMessage = error.localizedDescription }
+        }
+    }
+
+    private func export(pdf: Bool) {
+        exporting = true
+        Task {
+            do {
+                let lines = Exporter.lines(from: try await QuotaService.shared.exportRows())
+                let stamp = Iso.today
+                if pdf {
+                    _ = Exporter.save(data: Exporter.pdf(lines, title: "Quota — pagamenti al \(formatIsoDate(stamp))"), suggestedName: "quota-pagamenti-\(stamp).pdf")
+                } else {
+                    _ = Exporter.save(data: Data(Exporter.csv(lines).utf8), suggestedName: "quota-pagamenti-\(stamp).csv")
+                }
+                errorMessage = nil
+            } catch { errorMessage = "Esportazione non riuscita." }
+            exporting = false
         }
     }
 

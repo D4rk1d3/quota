@@ -14,6 +14,7 @@ final class AppModel {
     var activity: [ActivityItem] = []
     var renewals: [Renewal] = []
     var heroCycle: BillingCycle?
+    var profile = Profile.empty
     var loading = true
     var errorMessage: String?
 
@@ -36,7 +37,9 @@ final class AppModel {
             async let m = service.paymentMethods()
             async let a = service.activity()
             async let r = service.renewals()
-            (summary, subscriptions, entitlement, paymentMethods, activity, renewals) = try await (s, subs, e, m, a, r)
+            async let p = service.profile()
+            (summary, subscriptions, entitlement, paymentMethods, activity, renewals, profile) = try await (s, subs, e, m, a, r, p)
+            await NotificationScheduler.reschedule(renewals: renewals, daysBefore: profile.notifyDaysBefore)
             if let next = nextSubscription {
                 heroCycle = try await service.currentCycle(subscriptionId: next.id)
             } else {

@@ -238,10 +238,71 @@ struct Renewal: Decodable, Identifiable, Hashable, Sendable {
     let id: UUID
     let renewalDate: String
     let status: String
+    let expectedTotal: Double
+    let currency: String
     let subscriptions: SubscriptionName?
 
     enum CodingKeys: String, CodingKey {
-        case id, status, subscriptions
+        case id, status, subscriptions, currency
         case renewalDate = "renewal_date"
+        case expectedTotal = "expected_total"
     }
 }
+
+struct Profile: Decodable, Sendable {
+    let displayName: String?
+    let notifyDaysBefore: Int
+
+    enum CodingKeys: String, CodingKey {
+        case displayName = "display_name"
+        case notifyDaysBefore = "notify_days_before"
+    }
+
+    static let empty = Profile(displayName: nil, notifyDaysBefore: 3)
+}
+
+struct CycleStat: Decodable, Hashable, Sendable {
+    let periodStart: String
+    let expectedTotal: Double
+    let collectedTotal: Double
+    let currency: String
+
+    enum CodingKeys: String, CodingKey {
+        case currency
+        case periodStart = "period_start"
+        case expectedTotal = "expected_total"
+        case collectedTotal = "collected_total"
+    }
+}
+
+struct ExportRow: Decodable, Sendable {
+    struct Member: Decodable, Sendable { let name: String }
+    struct Method: Decodable, Sendable { let label: String }
+    struct Charge: Decodable, Sendable {
+        struct Cycle: Decodable, Sendable {
+            struct Sub: Decodable, Sendable { let name: String }
+            let periodStart: String
+            let subscriptions: Sub?
+            enum CodingKeys: String, CodingKey { case subscriptions; case periodStart = "period_start" }
+        }
+        let billingCycles: Cycle?
+        enum CodingKeys: String, CodingKey { case billingCycles = "billing_cycles" }
+    }
+    let amount: Double
+    let currency: String
+    let paidAt: String
+    let status: String
+    let note: String?
+    let member: Member?
+    let method: Method?
+    let charge: Charge?
+
+    enum CodingKeys: String, CodingKey {
+        case amount, currency, status, note
+        case paidAt = "paid_at"
+        case member = "subscription_members"
+        case method = "payment_methods"
+        case charge = "member_charges"
+    }
+}
+

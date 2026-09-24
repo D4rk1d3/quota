@@ -112,12 +112,41 @@ final class QuotaService {
 
     func renewals() async throws -> [Renewal] {
         try await client.from("billing_cycles")
-            .select("id, renewal_date, status, subscriptions(name)")
+            .select("id, renewal_date, status, expected_total, currency, subscriptions(name)")
             .in("status", values: ["upcoming", "current", "overdue"])
             .order("renewal_date", ascending: true).limit(120).execute().value
     }
 
+    func profile() async throws -> Profile {
+        let rows: [Profile] = try await client.from("profiles")
+            .select("display_name, notify_days_before")
+            .eq("id", value: try currentUserId()).execute().value
+        return rows.first ?? .empty
+    }
+
+    func cycleStats(since: String) async throws -> [CycleStat] {
+        try await client.from("billing_cycles")
+            .select("period_start, expected_total, collected_total, currency")
+            .gte("period_start", value: since)
+            .order("period_start", ascending: true).execute().value
+    }
+
+    func exportRows() async throws -> [ExportRow] {
+        try await client.from("payments")
+            .select("amount, currency, paid_at, status, note, subscription_members(name), payment_methods(label), member_charges(billing_cycles(period_start, subscriptions(name)))")
+            .order("paid_at", ascending: false).limit(5000).execute().value
+    }
+
     // MARK: Scrittura
+
+    func updateProfile(displayName: String, notifyDaysBefore: Int) async throws {
+        struct Patch: Encodable { let display_name: String; let notify_days_before: Int }
+        do {
+            try await client.from("profiles")
+                .update(Patch(display_name: displayName, notify_days_before: notifyDaysBefore))
+                .eq("id", value: try currentUserId()).execute()
+        } catch { throw QuotaError.from(error) }
+    }
 
     func createPaymentMethod(label: String, type: String) async throws {
         struct New: Encodable { let organizer_id: UUID; let label: String; let method_type: String }

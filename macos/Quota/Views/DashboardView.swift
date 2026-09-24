@@ -4,10 +4,16 @@ struct DashboardView: View {
     let model: AppModel
     var onOpen: (Subscription) -> Void
 
+    private var greeting: String? {
+        guard let name = model.profile.displayName, !name.isEmpty else { return nil }
+        let hour = Calendar.current.component(.hour, from: Date())
+        return "\(hour < 13 ? "Buongiorno" : hour < 18 ? "Buon pomeriggio" : "Buonasera"), \(name)"
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                QPageHeader(title: "Dashboard") {
+                QPageHeader(title: "Dashboard", subtitle: greeting) {
                     Text(formatLongToday()).font(.system(size: 14)).foregroundStyle(Color.qTextSecondary)
                 }
                 if let error = model.errorMessage { QErrorBanner(message: error) }
