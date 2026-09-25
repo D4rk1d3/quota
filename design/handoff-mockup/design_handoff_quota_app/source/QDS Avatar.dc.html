@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="width:{{ size }}px;height:{{ size }}px;border-radius:999px;background:{{ color }};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+  <span style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;font-size:{{ fontSize }}px;font-weight:600;line-height:1;color:#fff">{{ initials }}</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 64, &quot;height&quot;: 64}, &quot;initials&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;PT&quot;, &quot;tsType&quot;: &quot;string&quot;}, &quot;color&quot;: {&quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#5A8FBF&quot;, &quot;tsType&quot;: &quot;string&quot;}, &quot;size&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;md&quot;, &quot;options&quot;: [&quot;sm&quot;, &quot;md&quot;, &quot;lg&quot;], &quot;tsType&quot;: &quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const sizeMap = { sm: 32, md: 40, lg: 64 };
+    const size = sizeMap[this.props.size] || sizeMap.md;
+    return {
+      size,
+      fontSize: Math.round(size * 0.36),
+      color: this.props.color || '#5A8FBF',
+      initials: this.props.initials || '',
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <script type="text/babel" src="./quota-icons.jsx"></script>
+</helmet>
+<div style="display:inline-flex;align-items:center;gap:6px;padding:{{ padding }};border-radius:999px;background:{{ bg }}">
+  <sc-if value="{{ isPartial }}">
+    <div style="width:{{ dotSize }}px;height:{{ dotSize }}px;border-radius:999px;background:linear-gradient(90deg, {{ color }} 50%, transparent 50%);border:1.3px solid {{ color }};box-sizing:border-box;flex-shrink:0"></div>
+  </sc-if>
+  <sc-if value="{{ isNotPartial }}">
+    <x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="{{ iconName }}" size="{{ iconSize }}" color="{{ color }}" stroke-width="{{ strokeWidth }}" hint-size="12px,12px"></x-import>
+  </sc-if>
+  <span style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;font-size:{{ fontSize }};font-weight:600;line-height:1;color:{{ color }}">{{ label }}</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 140, &quot;height&quot;: 40}, &quot;status&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;paid&quot;, &quot;options&quot;: [&quot;scheduled&quot;, &quot;due&quot;, &quot;paid&quot;, &quot;partial&quot;, &quot;overdue&quot;, &quot;credit&quot;, &quot;paused&quot;, &quot;removed&quot;], &quot;tsType&quot;: &quot;string&quot;}, &quot;detail&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;&quot;, &quot;tsType&quot;: &quot;string&quot;}, &quot;size&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;md&quot;, &quot;options&quot;: [&quot;sm&quot;, &quot;md&quot;], &quot;tsType&quot;: &quot;string&quot;}, &quot;light&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const status = this.props.status || 'paid';
+    const light = !!this.props.light;
+    const mapDark = {
+      scheduled: { label: 'Programmato', icon: 'clock', color: 'rgba(255,255,255,0.5)', bg: 'rgba(255,255,255,0.08)' },
+      due: { label: 'In scadenza', icon: 'clock', color: '#E3A548', bg: 'rgba(227,165,72,0.16)' },
+      paid: { label: 'Pagato', icon: 'check', color: '#7FB093', bg: 'rgba(91,143,111,0.16)' },
+      partial: { label: this.props.detail || 'Parziale', icon: null, color: '#E3A548', bg: 'rgba(227,165,72,0.16)' },
+      overdue: { label: 'In ritardo', icon: 'warning', color: '#E2685C', bg: 'rgba(226,104,92,0.16)' },
+      credit: { label: 'Credito', icon: 'coin', color: '#8E7CC3', bg: 'rgba(142,124,195,0.16)' },
+      paused: { label: 'In pausa', icon: 'pause', color: 'rgba(255,255,255,0.5)', bg: 'rgba(255,255,255,0.08)' },
+      removed: { label: 'Rimosso', icon: 'x', color: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.06)' },
+    };
+    const mapLight = {
+      scheduled: { label: 'Programmato', icon: 'clock', color: 'rgba(0,0,0,0.5)', bg: 'rgba(0,0,0,0.06)' },
+      due: { label: 'In scadenza', icon: 'clock', color: '#9A5F12', bg: 'rgba(182,120,22,0.12)' },
+      paid: { label: 'Pagato', icon: 'check', color: '#3F6350', bg: 'rgba(76,122,93,0.12)' },
+      partial: { label: this.props.detail || 'Parziale', icon: null, color: '#9A5F12', bg: 'rgba(182,120,22,0.12)' },
+      overdue: { label: 'In ritardo', icon: 'warning', color: '#C23B2E', bg: 'rgba(194,59,46,0.1)' },
+      credit: { label: 'Credito', icon: 'coin', color: '#6B54A8', bg: 'rgba(107,84,168,0.12)' },
+      paused: { label: 'In pausa', icon: 'pause', color: 'rgba(0,0,0,0.5)', bg: 'rgba(0,0,0,0.06)' },
+      removed: { label: 'Rimosso', icon: 'x', color: 'rgba(0,0,0,0.4)', bg: 'rgba(0,0,0,0.05)' },
+    };
+    const map = light ? mapLight : mapDark;
+    const s = map[status] || map.paid;
+    const small = this.props.size === 'sm';
+    return {
+      label: s.label,
+      color: s.color,
+      bg: s.bg,
+      iconName: s.icon || 'check',
+      isPartial: status === 'partial',
+      isNotPartial: status !== 'partial',
+      padding: small ? '3px 9px' : '5px 12px',
+      fontSize: small ? '10.5px' : '11.5px',
+      iconSize: small ? 11 : 13,
+      dotSize: small ? 10 : 12,
+      strokeWidth: 2,
+    };
+  }
+}
+</script>
+</body>
+</html>

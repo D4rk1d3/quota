@@ -1,0 +1,15 @@
+<!-- @dsCard group="Liste" height=220 subtitle="Riga membro dentro una Card, 3 stati" -->
+<div id="mount" style="padding:28px;width:360px"></div>
+<script>
+  var card = Quota.Card({
+    padding: "2px 16px",
+    gap: "0",
+    children: [
+      Quota.MemberRow({ initials: "GC", color: "#5A8FBF", person: "Giacomo", covered: "15 nov 2026", status: "regolare" }),
+      Quota.MemberRow({ initials: "SR", color: "#C97B96", person: "Sara", covered: "20 set 2026", status: "scadenza" }),
+      Quota.MemberRow({ initials: "NC", color: "#D99457", person: "Nicolò", covered: "15 ago 2026", status: "ritardo" }),
+      Quota.MemberRow({ initials: "TU", color: Quota.tokens.accent, person: "Tu", covered: "15 nov 2026", status: "regolare", you: true })
+    ]
+  });
+  document.getElementById('mount').appendChild(card);
+</script>

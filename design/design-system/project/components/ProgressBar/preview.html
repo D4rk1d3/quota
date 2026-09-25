@@ -1,0 +1,23 @@
+<!-- @dsCard group="Base" height=110 subtitle="Traccia + riempimento accento" -->
+<div id="mount" style="padding:32px;width:100%;box-sizing:border-box"></div>
+<script>
+  var mount = document.getElementById('mount');
+  var wrap = document.createElement('div');
+  wrap.style.display = 'flex';
+  wrap.style.justifyContent = 'space-between';
+  wrap.style.marginBottom = '8px';
+  var a = document.createElement('span');
+  a.textContent = 'Fondo coperto';
+  a.style.fontSize = '12.5px';
+  a.style.color = Quota.tokens.inkSecondary;
+  a.style.fontFamily = Quota.tokens.fontSans;
+  var b = document.createElement('span');
+  b.textContent = '14,00 € / 21,00 €';
+  b.style.fontSize = '12.5px';
+  b.style.color = Quota.tokens.inkSecondary;
+  b.style.fontFamily = Quota.tokens.fontSans;
+  wrap.appendChild(a);
+  wrap.appendChild(b);
+  mount.appendChild(wrap);
+  mount.appendChild(Quota.ProgressBar({ value: 14, max: 21 }));
+</script>

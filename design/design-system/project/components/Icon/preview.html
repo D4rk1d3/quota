@@ -1,0 +1,22 @@
+<!-- @dsCard group="Base" height=150 subtitle="22 icone rounded-line, monocrome" -->
+<div id="mount" style="padding:24px;display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start"></div>
+<script>
+  var names = ["home", "people", "calendar", "clock", "gear", "plus", "coin", "tray", "envelope", "bell", "lock", "euroSign"];
+  var mount = document.getElementById('mount');
+  names.forEach(function (name) {
+    var cell = document.createElement('div');
+    cell.style.display = 'flex';
+    cell.style.flexDirection = 'column';
+    cell.style.alignItems = 'center';
+    cell.style.gap = '8px';
+    cell.style.width = '56px';
+    cell.appendChild(Quota.Icon({ name: name, size: 22, color: Quota.tokens.ink }));
+    var label = document.createElement('span');
+    label.textContent = name;
+    label.style.fontSize = '10px';
+    label.style.color = Quota.tokens.inkCaption;
+    label.style.fontFamily = Quota.tokens.fontSans;
+    cell.appendChild(label);
+    mount.appendChild(cell);
+  });
+</script>

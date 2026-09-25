@@ -1,0 +1,8 @@
+<!-- @dsCard group="Azioni" height=110 subtitle="Bottone circolare solo icona: attivo, pieno, neutro" -->
+<div id="mount" style="padding:28px;display:flex;gap:14px;align-items:center"></div>
+<script>
+  var mount = document.getElementById('mount');
+  mount.appendChild(Quota.IconButton({ icon: "home", active: true, iconSize: 21 }));
+  mount.appendChild(Quota.IconButton({ icon: "people", iconSize: 21 }));
+  mount.appendChild(Quota.IconButton({ icon: "plus", filled: true, size: 34, iconSize: 15 }));
+</script>

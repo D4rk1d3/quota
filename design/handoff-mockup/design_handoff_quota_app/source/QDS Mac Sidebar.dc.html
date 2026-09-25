@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <script type="text/babel" src="./quota-icons.jsx"></script>
+</helmet>
+<div style="width:220px;height:100%;padding:8px;flex-shrink:0;position:relative;display:flex;flex-direction:column;box-sizing:border-box">
+  <div style="position:absolute;inset:8px;border-radius:18px;background:{{ glassBg }};backdrop-filter:blur(50px) saturate(200%);-webkit-backdrop-filter:blur(50px) saturate(200%);border:0.5px solid {{ glassBorder }};box-shadow:{{ glassShadow }}"></div>
+  <div style="position:relative;padding-top:14px;display:flex;flex-direction:column;gap:1px">
+    <div style="display:flex;align-items:center;gap:10px;height:30px;padding:0 12px;margin:0 10px;border-radius:8px;background:{{ homeBg }}">
+      <x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="home" size="17" color="{{ homeColor }}" hint-size="17px,17px"></x-import>
+      <span style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;font-size:12.5px;font-weight:{{ homeWeight }};color:{{ homeText }}">Home</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;height:30px;padding:0 12px;margin:0 10px;border-radius:8px;background:{{ groupsBg }}">
+      <x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="people" size="17" color="{{ groupsColor }}" hint-size="17px,17px"></x-import>
+      <span style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;font-size:12.5px;font-weight:{{ groupsWeight }};color:{{ groupsText }}">Gruppi</span>
+    </div>
+    <sc-if value="{{ showGroupList }}">
+      <div style="display:flex;flex-direction:column;gap:1px;margin:2px 10px 4px 22px">
+        <div style="display:flex;align-items:center;gap:9px;height:26px;padding:0 10px;border-radius:7px;background:{{ netflixBg }}"><div style="width:6px;height:6px;border-radius:999px;background:#5A8FBF;flex-shrink:0"></div><span style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;font-size:12px;font-weight:{{ netflixWeight }};color:{{ netflixText }}">Netflix</span></div>
+        <div style="display:flex;align-items:center;gap:9px;height:26px;padding:0 10px;border-radius:7px;background:{{ spotifyBg }}"><div style="width:6px;height:6px;border-radius:999px;background:#8E7CC3;flex-shrink:0"></div><span style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;font-size:12px;font-weight:{{ spotifyWeight }};color:{{ spotifyText }}">Spotify Family</span></div>
+        <div style="display:flex;align-items:center;gap:9px;height:26px;padding:0 10px;border-radius:7px;background:{{ gymBg }}"><div style="width:6px;height:6px;border-radius:999px;background:#D99457;flex-shrink:0"></div><span style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;font-size:12px;font-weight:{{ gymWeight }};color:{{ gymText }}">Palestra</span></div>
+      </div>
+    </sc-if>
+    <div style="display:flex;align-items:center;gap:10px;height:30px;padding:0 12px;margin:0 10px;border-radius:8px;background:{{ calendarBg }}">
+      <x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="calendar" size="17" color="{{ calendarColor }}" hint-size="17px,17px"></x-import>
+      <span style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;font-size:12.5px;font-weight:{{ calendarWeight }};color:{{ calendarText }}">Calendario</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;height:30px;padding:0 12px;margin:0 10px;border-radius:8px;background:{{ activityBg }}">
+      <x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="clock" size="17" color="{{ activityColor }}" hint-size="17px,17px"></x-import>
+      <span style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;font-size:12.5px;font-weight:{{ activityWeight }};color:{{ activityText }}">Attività</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;height:30px;padding:0 12px;margin:0 10px;border-radius:8px;background:{{ settingsBg }}">
+      <x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="gear" size="17" color="{{ settingsColor }}" hint-size="17px,17px"></x-import>
+      <span style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;font-size:12.5px;font-weight:{{ settingsWeight }};color:{{ settingsText }}">Impostazioni</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 220, &quot;height&quot;: 700}, &quot;active&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;home&quot;, &quot;options&quot;: [&quot;home&quot;, &quot;groups&quot;, &quot;group-detail&quot;, &quot;calendar&quot;, &quot;activity&quot;, &quot;settings&quot;], &quot;tsType&quot;: &quot;string&quot;}, &quot;activeGroup&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;&quot;, &quot;tsType&quot;: &quot;string&quot;}, &quot;light&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const active = this.props.active || 'home';
+    const activeGroup = this.props.activeGroup || '';
+    const light = !!this.props.light;
+    const items = ['home', 'groups', 'calendar', 'activity', 'settings'];
+    const out = {};
+    items.forEach((key) => {
+      const sel = key === active;
+      out[key + 'Bg'] = sel ? (light ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.12)') : 'transparent';
+      out[key + 'Color'] = sel ? (light ? '#3F6350' : '#6FA382') : (light ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.55)');
+      out[key + 'Text'] = sel ? (light ? 'rgba(0,0,0,0.92)' : 'rgba(255,255,255,0.96)') : (light ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.8)');
+      out[key + 'Weight'] = sel ? 600 : 500;
+    });
+    out.showGroupList = active === 'groups' || active === 'group-detail';
+    ['netflix', 'spotify', 'gym'].forEach((g) => {
+      const label = g === 'netflix' ? 'Netflix' : g === 'spotify' ? 'Spotify Family' : 'Palestra';
+      const sel = activeGroup === label;
+      out[g + 'Bg'] = sel ? (light ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.1)') : 'transparent';
+      out[g + 'Text'] = sel ? (light ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.95)') : (light ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.65)');
+      out[g + 'Weight'] = sel ? 600 : 500;
+    });
+    out.glassBg = light ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.055)';
+    out.glassBorder = light ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.09)';
+    out.glassShadow = light ? '0 8px 30px rgba(0,0,0,0.08)' : '0 8px 40px rgba(0,0,0,0.4)';
+    return out;
+  }
+}
+</script>
+</body>
+</html>

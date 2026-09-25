@@ -1,0 +1,49 @@
+{
+  "v": 3,
+  "layout": "files",
+  "createdOnFiles": { "v": 1, "at": "2026-09-17T14:03:30Z" },
+  "title": "Quota",
+  "namespace": "Quota",
+  "libraries": [],
+  "sections": {},
+  "groups": ["Icons"],
+  "assetGroups": {
+    "Icons": {
+      "name": "Icons",
+      "tile": "s",
+      "order": ["home", "people", "calendar", "clock", "gear", "plus", "chevronRight", "chevronLeft", "chevronDown", "check", "x", "coin", "pencil", "warning", "tray", "envelope", "wifiSlash", "bell", "undo", "refresh", "lock", "euroSign"],
+      "files": {
+        "home": { "name": "home.svg", "blob": "fa9ac1bacefce751345d1f4f23bff524", "size": 234, "type": "image/svg+xml" },
+        "people": { "name": "people.svg", "blob": "3cfc39ab843ff6c0501bd295138ac7c9", "size": 339, "type": "image/svg+xml" },
+        "calendar": { "name": "calendar.svg", "blob": "89214e8e3d598d35f76bafcd58245c73", "size": 283, "type": "image/svg+xml" },
+        "clock": { "name": "clock.svg", "blob": "cdc57b27cddd9e5ca21a1cc662a67ef5", "size": 250, "type": "image/svg+xml" },
+        "gear": { "name": "gear.svg", "blob": "b4de6706a608c12dc88a9403cbf53eb5", "size": 352, "type": "image/svg+xml" },
+        "plus": { "name": "plus.svg", "blob": "4c69b75728a246b356ae08ddd9ec1643", "size": 205, "type": "image/svg+xml" },
+        "chevronRight": { "name": "chevronRight.svg", "blob": "ec30a71f2af97264e1253874af94cf74", "size": 200, "type": "image/svg+xml" },
+        "chevronLeft": { "name": "chevronLeft.svg", "blob": "533fc832f2706fd8fc6a3a30268fba33", "size": 202, "type": "image/svg+xml" },
+        "chevronDown": { "name": "chevronDown.svg", "blob": "8fd1d9e123c8c975501243eb829011d9", "size": 200, "type": "image/svg+xml" },
+        "check": { "name": "check.svg", "blob": "f97885fcef685f153d7a3827454020f3", "size": 203, "type": "image/svg+xml" },
+        "x": { "name": "x.svg", "blob": "b9effec8bc9c2f894d7ae5953be2739f", "size": 209, "type": "image/svg+xml" },
+        "coin": { "name": "coin.svg", "blob": "2df90850fef05d3abee64865f6756f1c", "size": 338, "type": "image/svg+xml" },
+        "pencil": { "name": "pencil.svg", "blob": "02ffacec9679173bed9fb34a7ffcbff1", "size": 242, "type": "image/svg+xml" },
+        "warning": { "name": "warning.svg", "blob": "a2651d5d1669dad206e0a557e584db10", "size": 224, "type": "image/svg+xml" },
+        "tray": { "name": "tray.svg", "blob": "c77f271e8388a08cca0c464d103a3697", "size": 287, "type": "image/svg+xml" },
+        "envelope": { "name": "envelope.svg", "blob": "525d06adf3c9448f4ac600bef6389fbe", "size": 286, "type": "image/svg+xml" },
+        "wifiSlash": { "name": "wifiSlash.svg", "blob": "d3723f92783f496f10efe7680823a09a", "size": 280, "type": "image/svg+xml" },
+        "bell": { "name": "bell.svg", "blob": "9746d3c2f0336128e71cbc8d1cdb5f5d", "size": 269, "type": "image/svg+xml" },
+        "undo": { "name": "undo.svg", "blob": "147950c54559d4dd51446dd911f514ef", "size": 226, "type": "image/svg+xml" },
+        "refresh": { "name": "refresh.svg", "blob": "4592655b449cafd770c910083063ba53", "size": 284, "type": "image/svg+xml" },
+        "lock": { "name": "lock.svg", "blob": "625e0e1d2a6339679f567f78729eca73", "size": 297, "type": "image/svg+xml" },
+        "euroSign": { "name": "euroSign.svg", "blob": "bb5fa7fc3a794804a2aa8684657cab2c", "size": 239, "type": "image/svg+xml" }
+      }
+    }
+  },
+  "blobs": {},
+  "docs": { "readme": "project/README.md", "sections": [] },
+  "lastChange": {
+    "by": "Pietro",
+    "via": "Cowork",
+    "at": "2026-09-17T14:03:30Z",
+    "note": "Creato dall'handoff design Quota (macOS + Android): token, 14 componenti (bundle vanilla JS), set di 22 icone."
+  }
+}

@@ -1,0 +1,8 @@
+<!-- @dsCard group="Azioni" height=150 subtitle="Primario pieno, secondario translucido, stato di caricamento" -->
+<div id="mount" style="padding:28px;display:flex;flex-direction:column;gap:14px;align-items:flex-start"></div>
+<script>
+  var mount = document.getElementById('mount');
+  mount.appendChild(Quota.Button({ label: "Registra pagamento Spotify", icon: "plus", variant: "primary" }));
+  mount.appendChild(Quota.Button({ label: "Riprova", icon: "refresh", variant: "secondary" }));
+  mount.appendChild(Quota.Button({ label: "Invio in corso…", variant: "primary", loading: true }));
+</script>

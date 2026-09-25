@@ -1,0 +1,87 @@
+/* Quota — compiled design tokens (generated from tokens.json for web/reference use). */
+:root, [data-theme="dark"] {
+  --bg-base: #0B0B0D; /* Sfondo di base dell'intera schermata (root del canvas app, dietro le carte). */
+  --surface: #1C1C1E; /* Superficie carta di default: card dashboard, righe membro, input, sidebar/nav non vetrose. */
+  --surface-glass: rgba(255,255,255,0.06); /* Superfici vetro/vibrancy (sidebar macOS, nav a pillola Android): fondo rgba(255,255,255,0.05–0.08) + backdrop-filter blur(40–50px) saturate(180–200%) + bordo {border-glass}. */
+  --border-glass: rgba(255,255,255,0.1); /* Bordo 0.5px delle superfici vetro (sidebar macOS, nav a pillola Android); range sorgente 0.09–0.12. */
+  --accent: #5B8F6F; /* Verde accento: unico colore di brand, usato con parsimonia — bottoni primari pieni, riempimento progress bar, sfondo tenue del badge 'Regolare', icona attiva nella nav a pillola Android. */
+  --accent-ink: #7FB093; /* Verde per testo/icone su sfondo scuro (più leggibile del verde accento pieno): testo badge 'Regolare', link, voce attiva della sidebar macOS, icona 'coin' sul logo login. */
+  --warning: #E3A548; /* Colore funzionale di stato 'In scadenza' (non di brand): testo/sfondo tenue badge, importo mancante in evidenza sulla card 'prossimo addebito', puntino promemoria nel calendario. */
+  --danger: #E2685C; /* Colore funzionale di stato 'In ritardo'/errore (non di brand): testo/sfondo tenue badge, icona e titolo del banner di errore, bordo del banner di errore. */
+  --ink: #FFFFFF; /* Testo primario su ogni sfondo scuro dell'app. */
+  --ink-secondary: rgba(255,255,255,0.56); /* Testo secondario su sfondo scuro: sottotitoli e valori accessori (es. 'Coperto fino al 15 nov 2026'). */
+  --ink-caption: rgba(255,255,255,0.45); /* Label maiuscole/caption su sfondo scuro (es. 'PROSSIMO ADDEBITO', 'MEMBRI') e testo secondario di supporto nei banner. */
+  --ink-tertiary: rgba(255,255,255,0.35); /* Testo terziario/placeholder su sfondo scuro: testo segnaposto del campo email, nota di sicurezza sotto il bottone di login. */
+  --divider: rgba(255,255,255,0.08); /* Separatori sottili: tra righe membro, tra sezioni di una card, hairline generiche su sfondo scuro. */
+  --border-subtle: rgba(255,255,255,0.1); /* Bordo 1px di campi input e swatch/riquadri della style guide su sfondo scuro. */
+  --avatar-1: #5A8FBF; /* Colore identificativo assegnato a un membro (round-robin, non di brand) — es. Giacomo. */
+  --avatar-2: #8E7CC3; /* Colore identificativo assegnato a un membro (round-robin, non di brand) — es. Vanessa. */
+  --avatar-3: #C97B96; /* Colore identificativo assegnato a un membro (round-robin, non di brand) — es. Sara. */
+  --avatar-4: #D99457; /* Colore identificativo assegnato a un membro (round-robin, non di brand) — es. Nicolò. */
+  --avatar-5: #5FAFA8; /* Colore identificativo assegnato a un membro (round-robin, non di brand) — es. Ginevra. */
+  --avatar-you: #5B8F6F; /* Avatar dell'utente loggato ('Tu'): riusa sempre il verde accento, mai un colore round-robin. */
+}
+:root {
+  --shadow-card: 0 10px 28px rgba(0,0,0,0.35); /* Ombra di default per ogni superficie carta su sfondo {bg-base}. */
+  --shadow-overlay: 0 16px 40px rgba(0,0,0,0.5); /* Overlay e popup (es. popup del giorno nel calendario). */
+  --shadow-window: 0 24px 60px rgba(0,0,0,0.5); /* Finestra macOS e frame del dispositivo nei mockup di presentazione. */
+  --space-4: 4px; /* Gap minimo tra elementi molto ravvicinati (es. icona lucchetto e nota di sicurezza nel login). */
+  --space-8: 8px; /* Gap tra label e valore in una riga (es. sopra la progress bar 'Fondo coperto'). */
+  --space-12: 12px; /* Gap tra campo email e bottone nel login; gap interno tra icona e testo nei bottoni e negli input. */
+  --space-16: 16px; /* Padding orizzontale delle card compatte (righe membro); gap tra icona e testo nella sidebar macOS. */
+  --space-20: 20px; /* Padding minimo delle card standard; estremo inferiore del gap tra sezioni della dashboard. */
+  --space-24: 24px; /* Padding massimo delle card standard; estremo superiore del gap tra sezioni della dashboard e padding schermata. */
+  --space-32: 32px; /* Padding orizzontale del contenuto schermata su desktop; gap tra colonne nello storico pagamenti. */
+  --space-40: 40px; /* Spaziatura ampia tra blocchi principali (galleria mockup, sezioni molto separate). */
+  --radius-card: 20px; /* Raggio standard delle carte: righe membro, empty state, banner di errore, item attivo della sidebar. */
+  --radius-card-lg: 22px; /* Raggio della card principale della dashboard ('prossimo addebito'). */
+  --radius-field: 14px; /* Raggio dei campi input e degli elementi rettangolari piccoli (badge 'mancano' non pillola quando serve un angolo meno estremo). */
+  --radius-pill: 999px; /* Bottoni primari, badge di stato, avatar, nav a pillola Android — qualunque elemento completamente arrotondato. */
+  --radius-window: 26px; /* Cornice della finestra macOS / frame del dispositivo nei mockup. */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+}
+.hero {
+  font-family: var(--font-sans);
+  font-size: 34px;
+  line-height: 40px;
+  font-weight: 700;
+}
+.large-title {
+  font-family: var(--font-sans);
+  font-size: 28px;
+  line-height: 34px;
+  font-weight: 700;
+}
+.title {
+  font-family: var(--font-sans);
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 700;
+}
+.headline {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+}
+.body {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+}
+.subheadline {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+}
+.caption {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+}
+
+.hero { font-variant-numeric: tabular-nums; }
+.caption { text-transform: uppercase; letter-spacing: 0.06em; }

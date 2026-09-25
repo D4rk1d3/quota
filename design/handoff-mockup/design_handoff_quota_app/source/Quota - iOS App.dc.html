@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <script type="text/babel" src="./quota-icons.jsx"></script>
+  <style>
+    body { margin: 0; }
+    a { color: #7FB093; }
+    a:hover { color: #96C7A8; }
+    @keyframes qds-spin { to { transform: rotate(360deg); } }
+    @keyframes qds-pulse { 0% { opacity: 0.35; } 100% { opacity: 0.7; } }
+  </style>
+</helmet>
+<div style="background:#111113;min-height:100vh;padding:56px 48px;display:flex;flex-direction:column;gap:64px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;box-sizing:border-box">
+
+  <div style="max-width:760px">
+    <div style="font-size:13px;font-weight:600;color:#7FB093;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Quota · iOS · Fase 3</div>
+    <h1 style="font-size:34px;font-weight:700;color:#fff;margin:0 0 12px">App core, iOS</h1>
+    <p style="font-size:15px;color:rgba(255,255,255,0.6);line-height:1.6;margin:0">Stesso prodotto e stessi dati della versione <a href="./Quota — macOS App.dc.html">macOS</a>, adattato a schermo verticale con nav a pillola flottante. Android (Fase 4) è visivamente quasi identico a questo file.</p>
+  </div>
+
+  <!-- LOGIN -->
+  <section style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="font-size:22px;font-weight:700;color:#fff;margin:0">Login</h2>
+    <div style="display:flex;gap:36px;overflow-x:auto;padding-bottom:8px">
+
+      <div style="display:flex;flex-direction:column;gap:14px;flex-shrink:0">
+        <span style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.05em">Predefinito</span>
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+          <div style="height:100%;display:flex;align-items:center;justify-content:center;background:#0B0B0D;padding:0 28px;box-sizing:border-box">
+            <div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:24px">
+              <div style="width:56px;height:56px;border-radius:17px;background:linear-gradient(160deg,#5B8F6F,#48765A);display:flex;align-items:center;justify-content:center;box-shadow:0 14px 30px rgba(91,143,111,0.35)"><x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="coin" size="26" color="#fff" hint-size="26px,26px"></x-import></div>
+              <div style="text-align:center"><div style="font-size:22px;font-weight:700;color:#fff">Quota</div><div style="font-size:13.5px;color:rgba(255,255,255,0.55);margin-top:8px;line-height:1.5">Accedi con il link che ti invieremo per email.</div></div>
+              <div style="width:100%;display:flex;flex-direction:column;gap:12px">
+                <div style="width:100%;height:48px;border-radius:14px;background:#1C1C1E;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;padding:0 14px;gap:10px;box-sizing:border-box"><x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="envelope" size="15" color="rgba(255,255,255,0.35)" hint-size="15px,15px"></x-import><span style="font-size:13.5px;color:rgba(255,255,255,0.35)">pietro@esempio.com</span></div>
+                <dc-import name="QDS Button" label="Invia link di accesso" variant="primary" hint-size="100%,48px" style="width:100%"></dc-import>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px"><x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="lock" size="12" color="rgba(255,255,255,0.32)" hint-size="12px,12px"></x-import><span style="font-size:11px;color:rgba(255,255,255,0.35)">Solo un link sicuro, valido 15 minuti.</span></div>
+            </div>
+          </div>
+        </x-import>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;flex-shrink:0">
+        <span style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.05em">Caricamento</span>
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+          <div style="height:100%;display:flex;align-items:center;justify-content:center;background:#0B0B0D;padding:0 28px;box-sizing:border-box">
+            <div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:24px">
+              <div style="width:56px;height:56px;border-radius:17px;background:linear-gradient(160deg,#5B8F6F,#48765A);display:flex;align-items:center;justify-content:center;box-shadow:0 14px 30px rgba(91,143,111,0.35)"><x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="coin" size="26" color="#fff" hint-size="26px,26px"></x-import></div>
+              <div style="text-align:center"><div style="font-size:22px;font-weight:700;color:#fff">Quota</div><div style="font-size:13.5px;color:rgba(255,255,255,0.55);margin-top:8px;line-height:1.5">Accedi con il link che ti invieremo per email.</div></div>
+              <div style="width:100%;display:flex;flex-direction:column;gap:12px;opacity:0.6">
+                <div style="width:100%;height:48px;border-radius:14px;background:#1C1C1E;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;padding:0 14px;gap:10px;box-sizing:border-box"><x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="envelope" size="15" color="rgba(255,255,255,0.35)" hint-size="15px,15px"></x-import><span style="font-size:13.5px;color:rgba(255,255,255,0.6)">pietro@esempio.com</span></div>
+                <div style="width:100%;height:48px;border-radius:999px;background:#5B8F6F;display:flex;align-items:center;justify-content:center;gap:9px"><div style="width:15px;height:15px;border-radius:999px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;animation:qds-spin 0.9s linear infinite"></div><span style="font-size:14px;font-weight:600;color:#fff">Invio in corso…</span></div>
+              </div>
+            </div>
+          </div>
+        </x-import>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;flex-shrink:0">
+        <span style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.05em">Errore</span>
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+          <div style="height:100%;display:flex;align-items:center;justify-content:center;background:#0B0B0D;padding:0 28px;box-sizing:border-box">
+            <div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:20px">
+              <div style="width:56px;height:56px;border-radius:17px;background:linear-gradient(160deg,#5B8F6F,#48765A);display:flex;align-items:center;justify-content:center;box-shadow:0 14px 30px rgba(91,143,111,0.35)"><x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="coin" size="26" color="#fff" hint-size="26px,26px"></x-import></div>
+              <div style="text-align:center"><div style="font-size:22px;font-weight:700;color:#fff">Quota</div><div style="font-size:13.5px;color:rgba(255,255,255,0.55);margin-top:8px;line-height:1.5">Accedi con il link che ti invieremo per email.</div></div>
+              <div style="width:100%;display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:14px;background:rgba(226,104,92,0.12);border:1px solid rgba(226,104,92,0.3);box-sizing:border-box"><x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="warning" size="16" color="#E2685C" hint-size="16px,16px"></x-import><div><div style="font-size:13px;font-weight:600;color:#E2685C">Invio non riuscito</div><div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px">Controlla la connessione e riprova.</div></div></div>
+              <dc-import name="QDS Button" label="Riprova" variant="primary" hint-size="100%,48px" style="width:100%"></dc-import>
+            </div>
+          </div>
+        </x-import>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- LOGIN LIGHT -->
+  <section style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <span style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.05em">Login — Chiaro (light mode)</span>
+      <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ false }}" hint-size="402px,874px">
+        <div style="height:100%;display:flex;align-items:center;justify-content:center;background:#F2F2F5;padding:0 28px;box-sizing:border-box">
+          <div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:24px">
+            <div style="width:56px;height:56px;border-radius:17px;background:linear-gradient(160deg,#5B8F6F,#48765A);display:flex;align-items:center;justify-content:center;box-shadow:0 14px 30px rgba(91,143,111,0.35)"><x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="coin" size="26" color="#fff" hint-size="26px,26px"></x-import></div>
+            <div style="text-align:center"><div style="font-size:22px;font-weight:700;color:#1C1C1E">Quota</div><div style="font-size:13.5px;color:rgba(0,0,0,0.55);margin-top:8px;line-height:1.5">Accedi con il link che ti invieremo per email.</div></div>
+            <div style="width:100%;display:flex;flex-direction:column;gap:12px">
+              <div style="width:100%;height:48px;border-radius:14px;background:#fff;border:1px solid rgba(0,0,0,0.08);display:flex;align-items:center;padding:0 14px;gap:10px;box-sizing:border-box"><x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="envelope" size="15" color="rgba(0,0,0,0.35)" hint-size="15px,15px"></x-import><span style="font-size:13.5px;color:rgba(0,0,0,0.45)">pietro@esempio.com</span></div>
+              <dc-import name="QDS Button" label="Invia link di accesso" variant="primary" light="{{ true }}" hint-size="100%,48px" style="width:100%"></dc-import>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px"><x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="lock" size="12" color="rgba(0,0,0,0.32)" hint-size="12px,12px"></x-import><span style="font-size:11px;color:rgba(0,0,0,0.4)">Solo un link sicuro, valido 15 minuti.</span></div>
+          </div>
+        </div>
+      </x-import>
+    </div>
+  </section>
+
+  <!-- HOME -->
+  <section style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="font-size:22px;font-weight:700;color:#fff;margin:0">Home</h2>
+    <div style="display:flex;gap:36px;overflow-x:auto;padding-bottom:8px">
+
+      <div style="display:flex;flex-direction:column;gap:14px;flex-shrink:0">
+        <span style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.05em">Dati completi</span>
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+          <div style="min-height:100%;background:#0B0B0D;display:flex;flex-direction:column">
+            <div style="padding:60px 20px 0;flex:1;display:flex;flex-direction:column;gap:22px">
+              <div><div style="font-size:25px;font-weight:700;color:#fff">Buonasera, Pietro</div><div style="font-size:13px;color:rgba(255,255,255,0.45);margin-top:3px">Panoramica di ottobre</div></div>
+              <div style="display:flex;gap:28px">
+                <dc-import name="QDS AmountDisplay" amount="€16,33" label="Raccolto" size="large" hint-size="120px,44px"></dc-import>
+                <dc-import name="QDS AmountDisplay" amount="€3,66" label="Mancante" size="large" color="#E3A548" hint-size="120px,44px"></dc-import>
+                <dc-import name="QDS AmountDisplay" amount="2 / 3" label="Pagato" size="large" hint-size="90px,44px"></dc-import>
+              </div>
+              <div style="background:#1C1C1E;border-radius:22px;padding:20px;box-shadow:0 10px 28px rgba(0,0,0,0.35);display:flex;flex-direction:column;gap:14px">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between"><div><div style="font-size:16px;font-weight:700;color:#fff">Netflix</div><div style="font-size:12.5px;color:rgba(255,255,255,0.5);margin-top:2px">€19,99/mese · rinnova 12 ott</div></div><dc-import name="QDS StatusBadge" status="due" size="sm" hint-size="80px,20px"></dc-import></div>
+                <dc-import name="QDS MemberRow" initials="PT" color="#5B8F6F" name="Pietro (tu)" amount="€6,66" status="paid" hint-size="100%,58px"></dc-import>
+                <dc-import name="QDS MemberRow" initials="MR" color="#5A8FBF" name="Marco" amount="€6,67" status="paid" hint-size="100%,58px"></dc-import>
+                <dc-import name="QDS MemberRow" initials="LC" color="#D99457" name="Luca" amount="€3,00 / €6,66" status="partial" detail="Parziale" hint-size="100%,58px"></dc-import>
+                <dc-import name="QDS Button" label="Ricorda a Luca" variant="tertiary" icon="bell" hint-size="100%,42px" style="width:100%"></dc-import>
+              </div>
+            </div>
+            <div style="position:sticky;bottom:14px;display:flex;justify-content:center;margin-top:22px;padding-bottom:6px">
+              <dc-import name="QDS Capsule Nav" active="home" hint-size="230px,58px"></dc-import>
+            </div>
+          </div>
+        </x-import>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;flex-shrink:0">
+        <span style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.05em">Caricamento</span>
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+          <div style="min-height:100%;background:#0B0B0D;display:flex;flex-direction:column">
+            <div style="padding:60px 20px 0;flex:1;display:flex;flex-direction:column;gap:22px">
+              <div style="width:200px;height:22px;border-radius:6px;background:rgba(255,255,255,0.1);animation:qds-pulse 1.3s ease-in-out infinite alternate"></div>
+              <div style="display:flex;gap:28px"><div style="width:110px;height:50px;border-radius:8px;background:rgba(255,255,255,0.1);animation:qds-pulse 1.3s ease-in-out infinite alternate"></div><div style="width:110px;height:50px;border-radius:8px;background:rgba(255,255,255,0.08);animation:qds-pulse 1.3s ease-in-out infinite alternate"></div></div>
+              <div style="background:#1C1C1E;border-radius:22px;padding:20px;display:flex;flex-direction:column;gap:16px">
+                <div style="width:150px;height:16px;border-radius:6px;background:rgba(255,255,255,0.1);animation:qds-pulse 1.3s ease-in-out infinite alternate"></div>
+                <div style="display:flex;align-items:center;gap:14px"><div style="width:40px;height:40px;border-radius:999px;background:rgba(255,255,255,0.09);animation:qds-pulse 1.3s ease-in-out infinite alternate"></div><div style="flex:1;display:flex;flex-direction:column;gap:6px"><div style="width:100px;height:10px;border-radius:5px;background:rgba(255,255,255,0.1);animation:qds-pulse 1.3s ease-in-out infinite alternate"></div><div style="width:70px;height:9px;border-radius:5px;background:rgba(255,255,255,0.07);animation:qds-pulse 1.3s ease-in-out infinite alternate"></div></div></div>
+                <div style="display:flex;align-items:center;gap:14px"><div style="width:40px;height:40px;border-radius:999px;background:rgba(255,255,255,0.09);animation:qds-pulse 1.3s ease-in-out infinite alternate"></div><div style="flex:1;display:flex;flex-direction:column;gap:6px"><div style="width:100px;height:10px;border-radius:5px;background:rgba(255,255,255,0.1);animation:qds-pulse 1.3s ease-in-out infinite alternate"></div><div style="width:70px;height:9px;border-radius:5px;background:rgba(255,255,255,0.07);animation:qds-pulse 1.3s ease-in-out infinite alternate"></div></div></div>
+              </div>
+            </div>
+            <div style="position:sticky;bottom:14px;display:flex;justify-content:center;margin-top:22px;padding-bottom:6px">
+              <dc-import name="QDS Capsule Nav" active="home" hint-size="230px,58px"></dc-import>
+            </div>
+          </div>
+        </x-import>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;flex-shrink:0">
+        <span style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.05em">Vuoto</span>
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+          <div style="min-height:100%;background:#0B0B0D;display:flex;flex-direction:column">
+            <div style="padding:60px 20px 0;flex:1;display:flex;flex-direction:column;gap:22px">
+              <div><div style="font-size:25px;font-weight:700;color:#fff">Buonasera, Pietro</div><div style="font-size:13px;color:rgba(255,255,255,0.45);margin-top:3px">Panoramica di ottobre</div></div>
+              <div style="background:#1C1C1E;border-radius:20px;padding:44px 20px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 10px 28px rgba(0,0,0,0.3)">
+                <div style="width:52px;height:52px;border-radius:16px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center"><x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="tray" size="24" color="rgba(255,255,255,0.35)" hint-size="24px,24px"></x-import></div>
+                <div style="font-size:15px;font-weight:600;color:rgba(255,255,255,0.85)">I tuoi abbonamenti appariranno qui</div>
+                <div style="font-size:13px;color:rgba(255,255,255,0.45);text-align:center;line-height:1.5">Crea il tuo primo gruppo per iniziare.</div>
+                <dc-import name="QDS Button" label="Crea il primo gruppo" variant="primary" icon="plus" hint-size="200px,44px" style="width:200px"></dc-import>
+              </div>
+            </div>
+            <div style="position:sticky;bottom:14px;display:flex;justify-content:center;margin-top:22px;padding-bottom:6px">
+              <dc-import name="QDS Capsule Nav" active="home" hint-size="230px,58px"></dc-import>
+            </div>
+          </div>
+        </x-import>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;flex-shrink:0">
+        <span style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.05em">Errore</span>
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+          <div style="min-height:100%;background:#0B0B0D;display:flex;flex-direction:column">
+            <div style="padding:60px 20px 0;flex:1;display:flex;flex-direction:column;gap:18px">
+              <div style="font-size:25px;font-weight:700;color:#fff">Buonasera, Pietro</div>
+              <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;background:rgba(226,104,92,0.12);border:1px solid rgba(226,104,92,0.3)"><x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="wifiSlash" size="16" color="#E2685C" hint-size="16px,16px"></x-import><div style="flex:1"><div style="font-size:12.5px;font-weight:600;color:#E2685C">Impossibile aggiornare i dati</div><div style="font-size:11.5px;color:rgba(255,255,255,0.55);margin-top:1px">Verifica la connessione.</div></div><dc-import name="QDS Button" label="Riprova" variant="secondary" size="sm" icon="refresh" hint-size="90px,36px" style="width:90px"></dc-import></div>
+              <div style="opacity:0.35;display:flex;gap:28px"><dc-import name="QDS AmountDisplay" amount="€16,33" label="Raccolto" size="large" hint-size="120px,44px"></dc-import><dc-import name="QDS AmountDisplay" amount="€3,66" label="Mancante" size="large" color="#E3A548" hint-size="120px,44px"></dc-import></div>
+            </div>
+            <div style="position:sticky;bottom:14px;display:flex;justify-content:center;margin-top:22px;padding-bottom:6px">
+              <dc-import name="QDS Capsule Nav" active="home" hint-size="230px,58px"></dc-import>
+            </div>
+          </div>
+        </x-import>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;flex-shrink:0">
+        <span style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.05em">Chiaro (light mode)</span>
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ false }}" hint-size="402px,874px">
+          <div style="min-height:100%;background:#F2F2F5;display:flex;flex-direction:column">
+            <div style="padding:60px 20px 0;flex:1;display:flex;flex-direction:column;gap:22px">
+              <div><div style="font-size:25px;font-weight:700;color:#1C1C1E">Buonasera, Pietro</div><div style="font-size:13px;color:rgba(0,0,0,0.45);margin-top:3px">Panoramica di ottobre</div></div>
+              <div style="display:flex;gap:28px">
+                <dc-import name="QDS AmountDisplay" amount="€16,33" label="Raccolto" size="large" light="{{ true }}" hint-size="120px,44px"></dc-import>
+                <dc-import name="QDS AmountDisplay" amount="€3,66" label="Mancante" size="large" color="#9A5F12" light="{{ true }}" hint-size="120px,44px"></dc-import>
+                <dc-import name="QDS AmountDisplay" amount="2 / 3" label="Pagato" size="large" light="{{ true }}" hint-size="90px,44px"></dc-import>
+              </div>
+              <div style="background:#fff;border-radius:22px;padding:20px;box-shadow:0 8px 22px rgba(0,0,0,0.08);display:flex;flex-direction:column;gap:14px">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between"><div><div style="font-size:16px;font-weight:700;color:#1C1C1E">Netflix</div><div style="font-size:12.5px;color:rgba(0,0,0,0.5);margin-top:2px">€19,99/mese · rinnova 12 ott</div></div><dc-import name="QDS StatusBadge" status="due" size="sm" light="{{ true }}" hint-size="80px,20px"></dc-import></div>
+                <dc-import name="QDS MemberRow" initials="PT" color="#5B8F6F" name="Pietro (tu)" amount="€6,66" status="paid" light="{{ true }}" hint-size="100%,58px"></dc-import>
+                <dc-import name="QDS MemberRow" initials="MR" color="#5A8FBF" name="Marco" amount="€6,67" status="paid" light="{{ true }}" hint-size="100%,58px"></dc-import>
+                <dc-import name="QDS MemberRow" initials="LC" color="#D99457" name="Luca" amount="€3,00 / €6,66" status="partial" detail="Parziale" light="{{ true }}" hint-size="100%,58px"></dc-import>
+                <dc-import name="QDS Button" label="Ricorda a Luca" variant="tertiary" icon="bell" light="{{ true }}" hint-size="100%,42px" style="width:100%"></dc-import>
+              </div>
+            </div>
+            <div style="position:sticky;bottom:14px;display:flex;justify-content:center;margin-top:22px;padding-bottom:6px">
+              <dc-import name="QDS Capsule Nav" active="home" light="{{ true }}" hint-size="230px,58px"></dc-import>
+            </div>
+          </div>
+        </x-import>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- GRUPPI -->
+  <section style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="font-size:22px;font-weight:700;color:#fff;margin:0">Gruppi</h2>
+    <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+      <div style="min-height:100%;background:#0B0B0D;display:flex;flex-direction:column">
+        <div style="padding:60px 20px 0;flex:1;display:flex;flex-direction:column;gap:18px">
+          <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:25px;font-weight:700;color:#fff">Gruppi</div><div style="width:36px;height:36px;border-radius:999px;background:#5B8F6F;display:flex;align-items:center;justify-content:center"><x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="plus" size="15" color="#fff" hint-size="15px,15px"></x-import></div></div>
+          <div style="display:flex;gap:24px;padding:14px 16px;background:#1C1C1E;border-radius:16px">
+            <div><div style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.4);text-transform:uppercase">In sospeso</div><div style="font-size:16px;font-weight:700;color:#fff;margin-top:3px">€12,65</div></div>
+            <div><div style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.4);text-transform:uppercase">Rinnovi</div><div style="font-size:16px;font-weight:700;color:#fff;margin-top:3px">3</div></div>
+            <div><div style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.4);text-transform:uppercase">Ritardo</div><div style="font-size:16px;font-weight:700;color:#E2685C;margin-top:3px">1</div></div>
+          </div>
+          <dc-import name="QDS SubscriptionCard" name="Netflix" price="€19,99/mese" membersCount="3" percent="82" collected="€16,33" renewDate="12 ott" overallStatus="due" hint-size="100%,150px"></dc-import>
+          <dc-import name="QDS SubscriptionCard" name="Spotify Family" price="€17,99/mese" membersCount="6" percent="100" collected="€17,99" renewDate="15 ott" overallStatus="paid" hint-size="100%,150px"></dc-import>
+          <dc-import name="QDS SubscriptionCard" name="Palestra" price="€120,00/anno" membersCount="2" percent="0" collected="€0,00" renewDate="1 gen" overallStatus="overdue" hint-size="100%,150px"></dc-import>
+        </div>
+        <div style="position:sticky;bottom:14px;display:flex;justify-content:center;margin-top:22px;padding-bottom:6px">
+          <dc-import name="QDS Capsule Nav" active="groups" hint-size="230px,58px"></dc-import>
+        </div>
+      </div>
+    </x-import>
+  </section>
+
+  <!-- DETTAGLIO GRUPPO -->
+  <section style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="font-size:22px;font-weight:700;color:#fff;margin:0">Dettaglio gruppo — Netflix</h2>
+    <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+      <div style="min-height:100%;background:#0B0B0D;display:flex;flex-direction:column">
+        <div style="padding:60px 20px 0;flex:1;display:flex;flex-direction:column;gap:18px">
+          <div style="display:flex;align-items:center;gap:6px"><x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="chevronLeft" size="13" color="rgba(255,255,255,0.4)" hint-size="13px,13px"></x-import><span style="font-size:13px;color:rgba(255,255,255,0.4)">Gruppi</span></div>
+          <div><div style="font-size:24px;font-weight:700;color:#fff">Netflix</div><div style="font-size:13px;color:rgba(255,255,255,0.5);margin-top:3px">€19,99/mese · rinnova il 12</div></div>
+          <div style="display:flex;gap:8px">
+            <div style="flex:1;display:flex"><dc-import name="QDS Button" label="Modifica" variant="secondary" size="sm" icon="pencil" hint-size="100px,36px" style="width:100%"></dc-import></div>
+            <div style="flex:1;display:flex"><dc-import name="QDS Button" label="Registra pagamento" variant="primary" size="sm" icon="plus" hint-size="100px,36px" style="width:100%"></dc-import></div>
+          </div>
+          <div style="display:flex;gap:8px;overflow-x:auto">
+            <div style="padding:7px 14px;border-radius:12px;background:rgba(255,255,255,0.04);flex-shrink:0"><div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.4)">Settembre</div></div>
+            <div style="padding:7px 14px;border-radius:12px;background:rgba(91,143,111,0.14);border:1px solid rgba(91,143,111,0.4);flex-shrink:0"><div style="font-size:11px;font-weight:600;color:#7FB093">Ottobre · attuale</div></div>
+            <div style="padding:7px 14px;border-radius:12px;background:rgba(255,255,255,0.04);flex-shrink:0"><span style="font-size:10.5px;color:rgba(255,255,255,0.35)">Novembre</span></div>
+          </div>
+          <div style="background:#1C1C1E;border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:10px">
+            <dc-import name="QDS ProgressBar" percent="82" hint-size="100%,8px"></dc-import>
+            <div style="display:flex;justify-content:space-between"><span style="font-size:12px;color:rgba(255,255,255,0.5)">€16,33 raccolti</span><span style="font-size:12px;color:rgba(255,255,255,0.5)">di €19,99</span></div>
+          </div>
+          <div style="background:#1C1C1E;border-radius:20px;padding:2px 14px">
+            <dc-import name="QDS MemberRow" initials="PT" color="#5B8F6F" name="Pietro (tu)" amount="€6,66" status="paid" hint-size="100%,64px"></dc-import>
+            <dc-import name="QDS MemberRow" initials="MR" color="#5A8FBF" name="Marco" amount="€6,67" status="paid" hint-size="100%,64px"></dc-import>
+            <dc-import name="QDS MemberRow" initials="LC" color="#D99457" name="Luca" amount="€3,00 / €6,66" status="partial" detail="Parziale" hint-size="100%,64px"></dc-import>
+          </div>
+        </div>
+        <div style="position:sticky;bottom:14px;display:flex;justify-content:center;margin-top:22px;padding-bottom:6px">
+          <dc-import name="QDS Capsule Nav" active="groups" hint-size="230px,58px"></dc-import>
+        </div>
+      </div>
+    </x-import>
+  </section>
+
+  <!-- REGISTRA PAGAMENTO (sheet) -->
+  <section style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="font-size:22px;font-weight:700;color:#fff;margin:0">Registra pagamento</h2>
+    <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+      <div style="min-height:100%;position:relative;background:#0B0B0D">
+        <div style="padding:60px 20px 0;opacity:0.3;filter:blur(1px)"><div style="font-size:24px;font-weight:700;color:#fff">Netflix</div></div>
+        <div style="position:absolute;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:flex-end">
+          <div style="width:100%;background:#1C1C1E;border-radius:24px 24px 0 0;padding:22px 20px 34px;box-shadow:0 -12px 40px rgba(0,0,0,0.5);display:flex;flex-direction:column;gap:16px;box-sizing:border-box">
+            <div style="width:36px;height:4px;border-radius:999px;background:rgba(255,255,255,0.25);align-self:center"></div>
+            <div style="font-size:17px;font-weight:700;color:#fff">Registra pagamento</div>
+            <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;color:rgba(255,255,255,0.4)">Membro</span><div style="height:44px;border-radius:14px;background:#242428;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between;padding:0 14px;box-sizing:border-box"><div style="display:flex;align-items:center;gap:10px"><dc-import name="QDS Avatar" initials="LC" color="#D99457" size="sm" hint-size="28px,28px"></dc-import><span style="font-size:13.5px;color:#fff">Luca</span></div><x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="caretDown" size="13" color="rgba(255,255,255,0.4)" hint-size="13px,13px"></x-import></div></div>
+            <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;color:rgba(255,255,255,0.4)">Importo — restano €3,66 su €6,66</span><div style="height:56px;border-radius:16px;background:#242428;border:1.5px solid #5B8F6F;box-shadow:0 0 0 3px rgba(91,143,111,0.2);display:flex;align-items:center;padding:0 16px;box-sizing:border-box"><span style="font-size:24px;font-weight:700;color:#fff">€3,66</span></div></div>
+            <div style="display:flex;gap:10px">
+              <div style="flex:1;display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;color:rgba(255,255,255,0.4)">Metodo</span><div style="height:44px;border-radius:14px;background:#242428;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between;padding:0 14px;box-sizing:border-box"><span style="font-size:13px;color:#fff">Revolut</span><x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="caretDown" size="12" color="rgba(255,255,255,0.4)" hint-size="12px,12px"></x-import></div></div>
+              <div style="flex:1;display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;color:rgba(255,255,255,0.4)">Data</span><div style="height:44px;border-radius:14px;background:#242428;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;padding:0 14px;box-sizing:border-box"><span style="font-size:13px;color:#fff">17 set</span></div></div>
+            </div>
+            <dc-import name="QDS Button" label="Registra pagamento" variant="primary" hint-size="100%,48px" style="width:100%"></dc-import>
+          </div>
+        </div>
+      </div>
+    </x-import>
+  </section>
+
+  <!-- ATTIVITÀ -->
+  <section style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="font-size:22px;font-weight:700;color:#fff;margin:0">Attività</h2>
+    <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+      <div style="min-height:100%;background:#0B0B0D;display:flex;flex-direction:column">
+        <div style="padding:60px 20px 0;flex:1;display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:25px;font-weight:700;color:#fff;margin-bottom:8px">Attività</div>
+          <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.4);text-transform:uppercase;padding:6px 2px">Oggi</div>
+          <div style="display:flex;gap:12px;padding:11px 2px;border-bottom:1px solid rgba(255,255,255,0.08)"><div style="width:32px;height:32px;border-radius:999px;background:rgba(91,143,111,0.16);display:flex;align-items:center;justify-content:center;flex-shrink:0"><x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="coin" size="14" color="#7FB093" hint-size="14px,14px"></x-import></div><div style="flex:1;min-width:0"><div style="font-size:13px;color:rgba(255,255,255,0.88)">Marco ha pagato €6,67 · Netflix</div><div style="font-size:11.5px;color:rgba(255,255,255,0.4);margin-top:2px">12:43</div></div></div>
+          <div style="display:flex;gap:12px;padding:11px 2px;border-bottom:1px solid rgba(255,255,255,0.08)"><div style="width:32px;height:32px;border-radius:999px;background:rgba(227,165,72,0.16);display:flex;align-items:center;justify-content:center;flex-shrink:0"><x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="bell" size="14" color="#E3A548" hint-size="14px,14px"></x-import></div><div style="flex:1;min-width:0"><div style="font-size:13px;color:rgba(255,255,255,0.88)">Promemoria inviato a Luca</div><div style="font-size:11.5px;color:rgba(255,255,255,0.4);margin-top:2px">10:21</div></div></div>
+          <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.4);text-transform:uppercase;padding:12px 2px 6px">Ieri</div>
+          <div style="display:flex;gap:12px;padding:11px 2px"><div style="width:32px;height:32px;border-radius:999px;background:rgba(226,104,92,0.16);display:flex;align-items:center;justify-content:center;flex-shrink:0"><x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="warning" size="14" color="#E2685C" hint-size="14px,14px"></x-import></div><div style="flex:1;min-width:0"><div style="font-size:13px;color:rgba(255,255,255,0.88)">Luca è in ritardo · Palestra</div><div style="font-size:11.5px;color:rgba(255,255,255,0.4);margin-top:2px">Ieri</div></div></div>
+        </div>
+        <div style="position:sticky;bottom:14px;display:flex;justify-content:center;margin-top:22px;padding-bottom:6px">
+          <dc-import name="QDS Capsule Nav" active="activity" hint-size="230px,58px"></dc-import>
+        </div>
+      </div>
+    </x-import>
+  </section>
+
+  <!-- CALENDARIO -->
+  <section style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="font-size:22px;font-weight:700;color:#fff;margin:0">Calendario</h2>
+    <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+      <div style="min-height:100%;background:#0B0B0D;display:flex;flex-direction:column">
+        <div style="padding:60px 20px 0;flex:1;display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:21px;font-weight:700;color:#fff">Settembre 2026</div><div style="display:flex;gap:6px"><div style="width:28px;height:28px;border-radius:999px;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center"><x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="chevronLeft" size="12" color="#fff" hint-size="12px,12px"></x-import></div><div style="width:28px;height:28px;border-radius:999px;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center"><x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="chevronRight" size="12" color="#fff" hint-size="12px,12px"></x-import></div></div></div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px"><div style="text-align:center;font-size:10.5px;font-weight:600;color:rgba(255,255,255,0.4)">L</div><div style="text-align:center;font-size:10.5px;font-weight:600;color:rgba(255,255,255,0.4)">M</div><div style="text-align:center;font-size:10.5px;font-weight:600;color:rgba(255,255,255,0.4)">M</div><div style="text-align:center;font-size:10.5px;font-weight:600;color:rgba(255,255,255,0.4)">G</div><div style="text-align:center;font-size:10.5px;font-weight:600;color:rgba(255,255,255,0.4)">V</div><div style="text-align:center;font-size:10.5px;font-weight:600;color:rgba(255,255,255,0.4)">S</div><div style="text-align:center;font-size:10.5px;font-weight:600;color:rgba(255,255,255,0.4)">D</div></div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+            <div style="aspect-ratio:1.6;border-radius:10px;display:flex;align-items:center;justify-content:center"><span style="font-size:12px;color:rgba(255,255,255,0.25)">31</span></div>
+            <div style="aspect-ratio:1.6;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><span style="font-size:12px;color:rgba(255,255,255,0.8)">1</span></div>
+            <div style="aspect-ratio:1.6;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><span style="font-size:12px;color:rgba(255,255,255,0.8)">2</span></div>
+            <div style="aspect-ratio:1.6;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><span style="font-size:12px;color:rgba(255,255,255,0.8)">3</span></div>
+            <div style="aspect-ratio:1.6;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><span style="font-size:12px;color:rgba(255,255,255,0.8)">4</span></div>
+            <div style="aspect-ratio:1.6;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><span style="font-size:12px;color:rgba(255,255,255,0.8)">5</span><div style="width:4px;height:4px;border-radius:999px;background:#7FB093"></div></div>
+            <div style="aspect-ratio:1.6;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><span style="font-size:12px;color:rgba(255,255,255,0.8)">6</span></div>
+            <div style="aspect-ratio:1.6;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><span style="font-size:12px;color:rgba(255,255,255,0.8)">7</span></div>
+            <div style="aspect-ratio:1.6;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><span style="font-size:12px;color:rgba(255,255,255,0.8)">8</span><div style="width:4px;height:4px;border-radius:999px;background:#E3A548"></div></div>
+            <div style="aspect-ratio:1.6;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><span style="font-size:12px;color:rgba(255,255,255,0.8)">9</span></div>
+            <div style="aspect-ratio:1.6;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><span style="font-size:12px;color:rgba(255,255,255,0.8)">10</span><div style="width:4px;height:4px;border-radius:999px;background:#7FB093"></div></div>
+            <div style="aspect-ratio:1.6;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><span style="font-size:12px;color:rgba(255,255,255,0.8)">11</span></div>
+            <div style="aspect-ratio:1.6;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><span style="font-size:12px;color:rgba(255,255,255,0.8)">12</span></div>
+            <div style="aspect-ratio:1.6;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><span style="font-size:12px;color:rgba(255,255,255,0.8)">13</span><div style="width:4px;height:4px;border-radius:999px;background:#E3A548"></div></div>
+            <div style="aspect-ratio:1.6;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><span style="font-size:12px;color:rgba(255,255,255,0.8)">14</span></div>
+            <div style="aspect-ratio:1.6;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><span style="font-size:12px;color:rgba(255,255,255,0.8)">15</span></div>
+            <div style="aspect-ratio:1.6;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><span style="font-size:12px;color:rgba(255,255,255,0.8)">16</span></div>
+            <div style="aspect-ratio:1.6;border-radius:10px;display:flex;align-items:center;justify-content:center"><span style="width:22px;height:22px;border-radius:999px;background:#5B8F6F;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff">17</span></div>
+            <div style="aspect-ratio:1.6;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><span style="font-size:12px;color:rgba(255,255,255,0.8)">18</span></div>
+            <div style="aspect-ratio:1.6;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><span style="font-size:12px;color:rgba(255,255,255,0.8)">19</span></div>
+            <div style="aspect-ratio:1.6;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><span style="font-size:12px;color:rgba(255,255,255,0.8)">20</span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:7px;padding-top:4px">
+            <div style="display:flex;align-items:center;gap:6px"><div style="width:6px;height:6px;border-radius:999px;background:rgba(255,255,255,0.45)"></div><span style="font-size:11.5px;color:rgba(255,255,255,0.5)">Rinnovo abbonamento</span></div>
+            <div style="display:flex;align-items:center;gap:6px"><div style="width:6px;height:6px;border-radius:999px;background:#7FB093"></div><span style="font-size:11.5px;color:rgba(255,255,255,0.5)">Pagamento ricevuto</span></div>
+            <div style="display:flex;align-items:center;gap:6px"><div style="width:6px;height:6px;border-radius:999px;background:#E3A548"></div><span style="font-size:11.5px;color:rgba(255,255,255,0.5)">Promemoria inviato</span></div>
+          </div>
+        </div>
+        <div style="position:sticky;bottom:14px;display:flex;justify-content:center;margin-top:14px;padding-bottom:6px">
+          <dc-import name="QDS Capsule Nav" active="calendar" hint-size="230px,58px"></dc-import>
+        </div>
+      </div>
+    </x-import>
+  </section>
+
+  <!-- IMPOSTAZIONI -->
+  <section style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="font-size:22px;font-weight:700;color:#fff;margin:0">Impostazioni</h2>
+    <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+      <div style="min-height:100%;background:#0B0B0D;display:flex;flex-direction:column">
+        <div style="padding:60px 20px 0;flex:1;display:flex;flex-direction:column;gap:16px">
+          <div style="font-size:25px;font-weight:700;color:#fff">Impostazioni</div>
+          <div style="background:#1C1C1E;border-radius:20px;padding:18px;display:flex;align-items:center;gap:14px">
+            <dc-import name="QDS Avatar" initials="PT" color="#5B8F6F" size="lg" hint-size="56px,56px"></dc-import>
+            <div style="flex:1"><div style="font-size:15px;font-weight:700;color:#fff">Pietro</div><div style="font-size:12.5px;color:rgba(255,255,255,0.5);margin-top:2px">pietro@esempio.com</div></div>
+          </div>
+          <div style="background:#1C1C1E;border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:10px">
+            <div style="font-size:14px;font-weight:600;color:#fff">Metodi di pagamento</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <div style="padding:6px 12px;border-radius:999px;background:rgba(255,255,255,0.08)"><span style="font-size:12px;color:#fff">Bonifico</span></div>
+              <div style="padding:6px 12px;border-radius:999px;background:rgba(255,255,255,0.08)"><span style="font-size:12px;color:#fff">Revolut</span></div>
+              <div style="padding:6px 12px;border-radius:999px;background:rgba(255,255,255,0.08)"><span style="font-size:12px;color:#fff">Satispay</span></div>
+              <div style="padding:6px 12px;border-radius:999px;background:rgba(255,255,255,0.08)"><span style="font-size:12px;color:#fff">Contanti</span></div>
+            </div>
+          </div>
+          <div style="background:#1C1C1E;border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:10px">
+            <div style="font-size:14px;font-weight:600;color:#fff">Notifiche automatiche</div>
+            <div style="display:flex;align-items:center;gap:9px"><x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="bell" size="13" color="rgba(255,255,255,0.4)" hint-size="13px,13px"></x-import><span style="font-size:12.5px;color:rgba(255,255,255,0.75)">3 giorni prima del rinnovo</span></div>
+          </div>
+          <div style="background:#1C1C1E;border-radius:20px;padding:18px;display:flex;align-items:center;justify-content:space-between">
+            <div style="font-size:14px;font-weight:600;color:#fff">Esporta dati</div>
+            <div style="display:flex;gap:8px"><dc-import name="QDS Button" label="CSV" variant="secondary" size="sm" hint-size="64px,36px" style="width:64px"></dc-import><dc-import name="QDS Button" label="PDF" variant="secondary" size="sm" hint-size="64px,36px" style="width:64px"></dc-import></div>
+          </div>
+        </div>
+        <div style="position:sticky;bottom:14px;display:flex;justify-content:center;margin-top:14px;padding-bottom:6px">
+          <dc-import name="QDS Capsule Nav" active="settings" hint-size="230px,58px"></dc-import>
+        </div>
+      </div>
+    </x-import>
+  </section>
+
+  <!-- DETTAGLIO MEMBRO -->
+  <section style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="font-size:22px;font-weight:700;color:#fff;margin:0">Dettaglio membro — Luca</h2>
+    <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+      <div style="min-height:100%;background:#0B0B0D;display:flex;flex-direction:column">
+        <div style="padding:60px 20px 0;flex:1;display:flex;flex-direction:column;gap:18px">
+          <div style="display:flex;align-items:center;gap:6px"><x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="chevronLeft" size="13" color="rgba(255,255,255,0.4)" hint-size="13px,13px"></x-import><span style="font-size:13px;color:rgba(255,255,255,0.4)">Netflix</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center">
+            <dc-import name="QDS Avatar" initials="LC" color="#D99457" size="lg" hint-size="64px,64px"></dc-import>
+            <div><div style="font-size:19px;font-weight:700;color:#fff">Luca</div><div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:3px">luca@esempio.com</div></div>
+            <dc-import name="QDS StatusBadge" status="partial" detail="€3,00 / €6,66 versati" size="sm" hint-size="150px,22px"></dc-import>
+          </div>
+          <div style="display:flex;justify-content:space-around;padding:14px 0;border-top:1px solid rgba(255,255,255,0.08);border-bottom:1px solid rgba(255,255,255,0.08)">
+            <div style="text-align:center"><div style="font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase">Quota</div><div style="font-size:15px;font-weight:600;color:#fff;margin-top:3px">€6,66</div></div>
+            <div style="text-align:center"><div style="font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase">Rimanente</div><div style="font-size:15px;font-weight:600;color:#E3A548;margin-top:3px">€3,66</div></div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <div style="flex:1;display:flex"><dc-import name="QDS Button" label="Modifica" variant="secondary" size="sm" icon="pencil" hint-size="90px,36px" style="width:100%"></dc-import></div>
+            <div style="flex:1;display:flex"><dc-import name="QDS Button" label="Pausa" variant="secondary" size="sm" icon="pause" hint-size="80px,36px" style="width:100%"></dc-import></div>
+            <div style="flex:1;display:flex"><dc-import name="QDS Button" label="Rimuovi" variant="destructive" size="sm" hint-size="80px,36px" style="width:100%"></dc-import></div>
+          </div>
+          <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.05em">Storico pagamenti</div>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <dc-import name="QDS PaymentRow" amount="€3,00" method="Revolut" note="17 set · ottobre (parziale)" hint-size="100%,70px"></dc-import>
+            <dc-import name="QDS PaymentRow" amount="€6,66" method="Revolut" note="9 ago · settembre" hint-size="100%,70px"></dc-import>
+            <dc-import name="QDS PaymentRow" amount="€6,66" method="Contanti" note="8 lug · annullato" reversed="{{ true }}" hint-size="100%,70px"></dc-import>
+          </div>
+        </div>
+        <div style="position:sticky;bottom:14px;display:flex;justify-content:center;margin-top:14px;padding-bottom:6px">
+          <dc-import name="QDS Capsule Nav" active="groups" hint-size="230px,58px"></dc-import>
+        </div>
+      </div>
+    </x-import>
+  </section>
+
+  <!-- ONBOARDING -->
+  <section style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="font-size:22px;font-weight:700;color:#fff;margin:0">Onboarding</h2>
+    <div style="display:flex;gap:36px;overflow-x:auto;padding-bottom:8px">
+
+      <div style="display:flex;flex-direction:column;gap:14px;flex-shrink:0">
+        <span style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.05em">1 · Benvenuto</span>
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+          <div style="height:100%;display:flex;align-items:center;justify-content:center;background:#0B0B0D;padding:0 28px;box-sizing:border-box">
+            <div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:22px;text-align:center">
+              <div style="width:60px;height:60px;border-radius:18px;background:linear-gradient(160deg,#5B8F6F,#48765A);display:flex;align-items:center;justify-content:center;box-shadow:0 14px 30px rgba(91,143,111,0.35)"><x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="coin" size="28" color="#fff" hint-size="28px,28px"></x-import></div>
+              <div><div style="font-size:22px;font-weight:700;color:#fff">Quota</div><div style="font-size:13.5px;color:rgba(255,255,255,0.6);margin-top:10px;line-height:1.55">Basta rincorrere le persone per i soldi dell'abbonamento.</div></div>
+              <dc-import name="QDS Button" label="Inizia" variant="primary" hint-size="100%,48px" style="width:100%"></dc-import>
+            </div>
+          </div>
+        </x-import>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;flex-shrink:0">
+        <span style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.05em">2 · Primo gruppo</span>
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+          <div style="height:100%;display:flex;align-items:center;justify-content:center;background:#0B0B0D;padding:0 28px;box-sizing:border-box">
+            <div style="width:100%;display:flex;flex-direction:column;gap:16px">
+              <div><div style="font-size:19px;font-weight:700;color:#fff">Crea il tuo primo gruppo</div><div style="font-size:12.5px;color:rgba(255,255,255,0.5);margin-top:4px">Un abbonamento condiviso da tracciare.</div></div>
+              <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;color:rgba(255,255,255,0.4)">Nome</span><div style="height:44px;border-radius:14px;background:#1C1C1E;border:1.5px solid #5B8F6F;display:flex;align-items:center;padding:0 14px;box-sizing:border-box"><span style="font-size:13.5px;color:#fff">Netflix</span></div></div>
+              <div style="display:flex;gap:10px">
+                <div style="flex:1;display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;color:rgba(255,255,255,0.4)">Costo</span><div style="height:44px;border-radius:14px;background:#1C1C1E;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;padding:0 12px;box-sizing:border-box"><span style="font-size:13px;color:#fff">€19,99</span></div></div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;color:rgba(255,255,255,0.4)">Rinnovo</span><div style="height:44px;border-radius:14px;background:#1C1C1E;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;padding:0 12px;box-sizing:border-box"><span style="font-size:13px;color:#fff">Il 12</span></div></div>
+              </div>
+              <dc-import name="QDS Button" label="Continua" variant="primary" hint-size="100%,48px" style="width:100%"></dc-import>
+            </div>
+          </div>
+        </x-import>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;flex-shrink:0">
+        <span style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.05em">3 · Membri</span>
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+          <div style="height:100%;display:flex;align-items:center;justify-content:center;background:#0B0B0D;padding:0 28px;box-sizing:border-box">
+            <div style="width:100%;display:flex;flex-direction:column;gap:16px">
+              <div><div style="font-size:19px;font-weight:700;color:#fff">Aggiungi membri</div><div style="font-size:12.5px;color:rgba(255,255,255,0.5);margin-top:4px">La quota si divide in parti uguali.</div></div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px">
+                <div style="display:flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;border-radius:999px;background:#1C1C1E"><dc-import name="QDS Avatar" initials="PT" color="#5B8F6F" size="sm" hint-size="26px,26px"></dc-import><span style="font-size:12px;color:#fff">Pietro (tu)</span></div>
+                <div style="display:flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;border-radius:999px;background:#1C1C1E"><dc-import name="QDS Avatar" initials="MR" color="#5A8FBF" size="sm" hint-size="26px,26px"></dc-import><span style="font-size:12px;color:#fff">Marco</span></div>
+                <div style="display:flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;border-radius:999px;background:#1C1C1E"><dc-import name="QDS Avatar" initials="LC" color="#D99457" size="sm" hint-size="26px,26px"></dc-import><span style="font-size:12px;color:#fff">Luca</span></div>
+                <div style="display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;border:1px dashed rgba(255,255,255,0.25)"><x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="plus" size="11" color="rgba(255,255,255,0.5)" hint-size="11px,11px"></x-import><span style="font-size:12px;color:rgba(255,255,255,0.6)">Aggiungi</span></div>
+              </div>
+              <div style="padding:11px 14px;border-radius:14px;background:rgba(91,143,111,0.1)"><span style="font-size:12px;color:#7FB093">€6,66 a testa · 3 membri</span></div>
+              <dc-import name="QDS Button" label="Continua" variant="primary" hint-size="100%,48px" style="width:100%"></dc-import>
+            </div>
+          </div>
+        </x-import>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;flex-shrink:0">
+        <span style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.05em">4 · Fatto</span>
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+          <div style="height:100%;display:flex;align-items:center;justify-content:center;background:#0B0B0D;padding:0 28px;box-sizing:border-box">
+            <div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center">
+              <div style="width:60px;height:60px;border-radius:999px;background:rgba(91,143,111,0.16);display:flex;align-items:center;justify-content:center"><x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="check" size="26" color="#7FB093" hint-size="26px,26px"></x-import></div>
+              <div><div style="font-size:19px;font-weight:700;color:#fff">Netflix è pronto</div><div style="font-size:13px;color:rgba(255,255,255,0.55);margin-top:8px;line-height:1.55">Inizia a tracciare i pagamenti dei tuoi 3 membri.</div></div>
+              <dc-import name="QDS Button" label="Vai alla Home" variant="primary" hint-size="100%,48px" style="width:100%"></dc-import>
+            </div>
+          </div>
+        </x-import>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- MODIFICA ABBONAMENTO -->
+  <section style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="font-size:22px;font-weight:700;color:#fff;margin:0">Modifica abbonamento</h2>
+    <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+      <div style="min-height:100%;position:relative;background:#0B0B0D">
+        <div style="padding:60px 20px 0;opacity:0.3;filter:blur(1px)"><div style="font-size:24px;font-weight:700;color:#fff">Netflix</div></div>
+        <div style="position:absolute;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:flex-end">
+          <div style="width:100%;background:#1C1C1E;border-radius:24px 24px 0 0;padding:22px 20px 34px;box-shadow:0 -12px 40px rgba(0,0,0,0.5);display:flex;flex-direction:column;gap:14px;box-sizing:border-box">
+            <div style="width:36px;height:4px;border-radius:999px;background:rgba(255,255,255,0.25);align-self:center"></div>
+            <div style="font-size:17px;font-weight:700;color:#fff">Modifica abbonamento</div>
+            <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;color:rgba(255,255,255,0.4)">Nome</span><div style="height:44px;border-radius:14px;background:#242428;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;padding:0 14px;box-sizing:border-box"><span style="font-size:13.5px;color:#fff">Netflix</span></div></div>
+            <div style="display:flex;gap:10px">
+              <div style="flex:1;display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;color:rgba(255,255,255,0.4)">Costo</span><div style="height:44px;border-radius:14px;background:#242428;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;padding:0 12px;box-sizing:border-box"><span style="font-size:13px;color:#fff">€19,99</span></div></div>
+              <div style="flex:1;display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;color:rgba(255,255,255,0.4)">Rinnovo</span><div style="height:44px;border-radius:14px;background:#242428;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;padding:0 12px;box-sizing:border-box"><span style="font-size:13px;color:#fff">Il 12</span></div></div>
+            </div>
+            <div style="padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.05)"><span style="font-size:11.5px;color:rgba(255,255,255,0.5)">Quota automatica: €6,66 a testa su 3 membri.</span></div>
+            <div style="display:flex;gap:10px;margin-top:2px">
+              <div style="flex:1;display:flex"><dc-import name="QDS Button" label="Annulla" variant="secondary" hint-size="100px,46px" style="width:100%"></dc-import></div>
+              <div style="flex:1;display:flex"><dc-import name="QDS Button" label="Salva" variant="primary" hint-size="100px,46px" style="width:100%"></dc-import></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </x-import>
+  </section>
+
+  <!-- AGGIUNGI MEMBRO -->
+  <section style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="font-size:22px;font-weight:700;color:#fff;margin:0">Aggiungi membro</h2>
+    <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+      <div style="min-height:100%;position:relative;background:#0B0B0D">
+        <div style="padding:60px 20px 0;opacity:0.3;filter:blur(1px)"><div style="font-size:24px;font-weight:700;color:#fff">Netflix</div></div>
+        <div style="position:absolute;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:flex-end">
+          <div style="width:100%;background:#1C1C1E;border-radius:24px 24px 0 0;padding:22px 20px 34px;box-shadow:0 -12px 40px rgba(0,0,0,0.5);display:flex;flex-direction:column;gap:14px;box-sizing:border-box">
+            <div style="width:36px;height:4px;border-radius:999px;background:rgba(255,255,255,0.25);align-self:center"></div>
+            <div style="font-size:17px;font-weight:700;color:#fff">Aggiungi membro</div>
+            <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;color:rgba(255,255,255,0.4)">Nome</span><div style="height:44px;border-radius:14px;background:#242428;border:1.5px solid #5B8F6F;display:flex;align-items:center;padding:0 14px;box-sizing:border-box"><span style="font-size:13.5px;color:#fff">Ginevra</span></div></div>
+            <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:11px;color:rgba(255,255,255,0.4)">Colore avatar</span><div style="display:flex;gap:8px"><div style="width:28px;height:28px;border-radius:999px;background:#5FAFA8;border:2px solid #fff"></div><div style="width:28px;height:28px;border-radius:999px;background:#5A8FBF"></div><div style="width:28px;height:28px;border-radius:999px;background:#D99457"></div><div style="width:28px;height:28px;border-radius:999px;background:#8E7CC3"></div></div></div>
+            <div style="padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.05)"><span style="font-size:11.5px;color:rgba(255,255,255,0.5)">Quota automatica: €5,00 a testa su 4 membri.</span></div>
+            <div style="display:flex;gap:10px;margin-top:2px">
+              <div style="flex:1;display:flex"><dc-import name="QDS Button" label="Annulla" variant="secondary" hint-size="100px,46px" style="width:100%"></dc-import></div>
+              <div style="flex:1;display:flex"><dc-import name="QDS Button" label="Aggiungi" variant="primary" hint-size="100px,46px" style="width:100%"></dc-import></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </x-import>
+  </section>
+
+  <!-- CAMBIO PREZZO -->
+  <section style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="font-size:22px;font-weight:700;color:#fff;margin:0">Cambio prezzo</h2>
+    <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+      <div style="min-height:100%;position:relative;background:#0B0B0D">
+        <div style="padding:60px 20px 0;opacity:0.3;filter:blur(1px)"><div style="font-size:24px;font-weight:700;color:#fff">Netflix</div></div>
+        <div style="position:absolute;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;padding:0 24px">
+          <div style="width:100%;background:#1C1C1E;border-radius:22px;padding:24px;box-shadow:0 24px 50px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:14px;box-sizing:border-box">
+            <div style="font-size:16px;font-weight:700;color:#fff">Prezzo Netflix aggiornato</div>
+            <div style="display:flex;align-items:baseline;gap:10px;justify-content:center;padding:12px 0"><span style="font-size:17px;color:rgba(255,255,255,0.4);text-decoration:line-through">€17,99</span><x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="chevronRight" size="14" color="rgba(255,255,255,0.35)" hint-size="14px,14px"></x-import><span style="font-size:22px;font-weight:700;color:#fff">€19,99</span></div>
+            <div style="font-size:12.5px;color:rgba(255,255,255,0.55);line-height:1.5">Il nuovo prezzo si applica dal ciclo di ottobre. I cicli passati restano invariati.</div>
+            <div style="display:flex;gap:10px;margin-top:2px">
+              <div style="flex:1;display:flex"><dc-import name="QDS Button" label="Annulla" variant="secondary" hint-size="100px,44px" style="width:100%"></dc-import></div>
+              <div style="flex:1;display:flex"><dc-import name="QDS Button" label="Applica" variant="primary" hint-size="100px,44px" style="width:100%"></dc-import></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </x-import>
+  </section>
+
+  <!-- AGGIUNGI METODO -->
+  <section style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="font-size:22px;font-weight:700;color:#fff;margin:0">Aggiungi metodo di pagamento</h2>
+    <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+      <div style="min-height:100%;position:relative;background:#0B0B0D">
+        <div style="padding:60px 20px 0;opacity:0.3;filter:blur(1px)"><div style="font-size:24px;font-weight:700;color:#fff">Impostazioni</div></div>
+        <div style="position:absolute;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:flex-end">
+          <div style="width:100%;background:#1C1C1E;border-radius:24px 24px 0 0;padding:22px 20px 34px;box-shadow:0 -12px 40px rgba(0,0,0,0.5);display:flex;flex-direction:column;gap:14px;box-sizing:border-box">
+            <div style="width:36px;height:4px;border-radius:999px;background:rgba(255,255,255,0.25);align-self:center"></div>
+            <div style="font-size:17px;font-weight:700;color:#fff">Aggiungi metodo</div>
+            <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;color:rgba(255,255,255,0.4)">Nome</span><div style="height:44px;border-radius:14px;background:#242428;border:1.5px solid #5B8F6F;display:flex;align-items:center;padding:0 14px;box-sizing:border-box"><span style="font-size:13.5px;color:#fff">PayPal</span></div></div>
+            <div style="display:flex;gap:10px">
+              <div style="flex:1;display:flex"><dc-import name="QDS Button" label="Annulla" variant="secondary" hint-size="100px,44px" style="width:100%"></dc-import></div>
+              <div style="flex:1;display:flex"><dc-import name="QDS Button" label="Salva" variant="primary" hint-size="100px,44px" style="width:100%"></dc-import></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </x-import>
+  </section>
+
+  <!-- ANALISI -->
+  <section style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="font-size:22px;font-weight:700;color:#fff;margin:0">Analisi — Netflix</h2>
+    <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+      <div style="min-height:100%;background:#0B0B0D;display:flex;flex-direction:column">
+        <div style="padding:60px 20px 0;flex:1;display:flex;flex-direction:column;gap:18px">
+          <div><div style="font-size:23px;font-weight:700;color:#fff">Analisi</div><div style="font-size:12.5px;color:rgba(255,255,255,0.45);margin-top:3px">Netflix · ultimi 6 mesi</div></div>
+          <div style="display:flex;gap:22px;padding:16px 18px;background:#1C1C1E;border-radius:16px">
+            <div><div style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.4);text-transform:uppercase">Raccolta</div><div style="font-size:19px;font-weight:700;color:#7FB093;margin-top:4px">94%</div></div>
+            <div><div style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.4);text-transform:uppercase">Raccolto</div><div style="font-size:19px;font-weight:700;color:#fff;margin-top:4px">€180</div></div>
+            <div><div style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.4);text-transform:uppercase">Sospeso</div><div style="font-size:19px;font-weight:700;color:#E3A548;margin-top:4px">€11</div></div>
+          </div>
+          <div style="background:#1C1C1E;border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:14px">
+            <div style="font-size:12.5px;font-weight:600;color:rgba(255,255,255,0.6)">Raccolta mensile</div>
+            <div style="display:flex;align-items:flex-end;gap:8px;height:90px">
+              <div style="flex:1;height:70%;border-radius:5px 5px 0 0;background:rgba(255,255,255,0.15)"></div>
+              <div style="flex:1;height:85%;border-radius:5px 5px 0 0;background:rgba(255,255,255,0.15)"></div>
+              <div style="flex:1;height:60%;border-radius:5px 5px 0 0;background:rgba(255,255,255,0.15)"></div>
+              <div style="flex:1;height:95%;border-radius:5px 5px 0 0;background:rgba(255,255,255,0.15)"></div>
+              <div style="flex:1;height:78%;border-radius:5px 5px 0 0;background:rgba(255,255,255,0.15)"></div>
+              <div style="flex:1;height:82%;border-radius:5px 5px 0 0;background:#5B8F6F"></div>
+            </div>
+          </div>
+        </div>
+        <div style="position:sticky;bottom:14px;display:flex;justify-content:center;margin-top:14px;padding-bottom:6px">
+          <dc-import name="QDS Capsule Nav" active="groups" hint-size="230px,58px"></dc-import>
+        </div>
+      </div>
+    </x-import>
+  </section>
+
+</div>
+</x-dc>
+</body>
+</html>

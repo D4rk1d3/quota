@@ -21,8 +21,8 @@ port = 54323
 
 [auth]
 enabled = true
-site_url = "https://quota-nu-six.vercel.app"
-additional_redirect_urls = ["http://localhost:3000/auth/callback", "https://quota-nu-six.vercel.app/auth/callback", "quota://login-callback"]
+site_url = "app.quota.mac://login-callback"
+additional_redirect_urls = ["app.quota.mac://login-callback"]
 jwt_expiry = 3600
 enable_signup = true
 
@@ -52,12 +52,15 @@ verify_enabled = true
 [edge_runtime]
 enabled = true
 
-[functions.daily-notifications]
-verify_jwt = true
-
 [storage.analytics]
 enabled = true
 max_namespaces = 10
 
 [storage.image_transformation]
 enabled = true
+
+[functions.lemonsqueezy-webhook]
+verify_jwt = false
+
+[functions.create-checkout]
+verify_jwt = true

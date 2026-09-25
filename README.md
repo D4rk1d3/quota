@@ -3,7 +3,7 @@
 Dividi gli abbonamenti in comune (Netflix, Spotify, palestra...) con il tuo gruppo:
 chi ha pagato, quanto manca, quando si rinnova. Quota non muove mai soldi, registra soltanto.
 
-Prodotto multi-abbonamento, multi-utente, con piano gratuito (1 abbonamento, 6 membri)
+Solo app native (nessun sito web). Prodotto multi-abbonamento, multi-utente, con piano gratuito (1 abbonamento, 6 membri)
 e piano Pro a pagamento (LemonSqueezy).
 
 ## Struttura
@@ -13,7 +13,7 @@ e piano Pro a pagamento (LemonSqueezy).
 | `supabase/` | Backend: migration (schema, RLS, funzioni, limiti del piano gratuito) ed Edge Function (`lemonsqueezy-webhook`, `create-checkout`). Progetto Supabase `nsxgzemqcsetxggmujdc`. | In uso |
 | `macos/` | App nativa macOS in SwiftUI (`app.quota.mac`). Progetto Xcode generato con XcodeGen da `project.yml`. | In uso |
 | `android/` | App nativa Android in Kotlin/Compose. **Ancora sul vecchio modello** (un solo Spotify) e sul vecchio progetto Supabase: da riscrivere sul nuovo backend. | Da rifare |
-| `web/` | Vecchio sito Next.js. Non fa parte del prodotto (solo app native): tenuto come riferimento e da eliminare. | Dismesso |
+| `design/` | Mockup e design system di riferimento (`handoff-mockup/`, `design-system/`): palette, componenti, schermate per macOS e Android. | Riferimento |
 
 ## macOS
 

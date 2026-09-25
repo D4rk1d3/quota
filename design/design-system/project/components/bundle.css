@@ -1,0 +1,24 @@
+/* Quota bundle stylesheet — shared keyframes + a light reset for previews. */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  background: var(--bg-base, #0B0B0D);
+  color: var(--ink, #FFFFFF);
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif);
+  margin: 0;
+}
+
+@keyframes quota-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes quota-pulse {
+  0% { opacity: 0.35; }
+  100% { opacity: 0.7; }
+}
+
+.quota-button {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+}

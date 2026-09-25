@@ -1,0 +1,16 @@
+<!-- @dsCard group="Base" height=110 subtitle="Cerchio iniziali, colore identificativo" -->
+<div id="mount" style="padding:28px;display:flex;gap:16px;align-items:center"></div>
+<script>
+  var members = [
+    { initials: "GC", color: "#5A8FBF" },
+    { initials: "VN", color: "#8E7CC3" },
+    { initials: "SR", color: "#C97B96" },
+    { initials: "NC", color: "#D99457" },
+    { initials: "GN", color: "#5FAFA8" },
+    { initials: "TU", color: Quota.tokens.accent }
+  ];
+  var mount = document.getElementById('mount');
+  members.forEach(function (m) {
+    mount.appendChild(Quota.Avatar(m));
+  });
+</script>

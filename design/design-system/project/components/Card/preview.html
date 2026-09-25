@@ -1,0 +1,28 @@
+<!-- @dsCard group="Layout" height=230 subtitle="Superficie standard, versione compatta della card 'prossimo addebito'" -->
+<div id="mount" style="padding:28px;width:320px"></div>
+<script>
+  var mount = document.getElementById('mount');
+  var label = document.createElement('div');
+  label.textContent = "PROSSIMO ADDEBITO";
+  label.style.fontFamily = Quota.tokens.fontSans;
+  label.style.fontSize = "11.5px";
+  label.style.fontWeight = "600";
+  label.style.color = Quota.tokens.inkCaption;
+  label.style.textTransform = "uppercase";
+  label.style.letterSpacing = "0.05em";
+  var amount = document.createElement('div');
+  amount.textContent = "20,99 €";
+  amount.style.fontFamily = Quota.tokens.fontSans;
+  amount.style.fontSize = "34px";
+  amount.style.fontWeight = "700";
+  amount.style.color = Quota.tokens.ink;
+  amount.style.marginTop = "6px";
+  var header = document.createElement('div');
+  header.appendChild(label);
+  header.appendChild(amount);
+  var card = Quota.Card({
+    size: "lg",
+    children: [header, Quota.ProgressBar({ value: 14, max: 21 }), Quota.Button({ label: "Registra pagamento Spotify", icon: "plus" })]
+  });
+  document.getElementById('mount').appendChild(card);
+</script>

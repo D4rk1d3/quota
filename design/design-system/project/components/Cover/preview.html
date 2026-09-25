@@ -1,0 +1,40 @@
+<!-- @dsCard height=288 -->
+<div style="width:960px;height:288px;background:var(--bg-base,#0B0B0D);position:relative;overflow:hidden;font-family:var(--font-sans,-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif)">
+<svg width="960" height="288" viewBox="0 0 960 288" xmlns="http://www.w3.org/2000/svg">
+  <!--
+    blocks: surface slab (full-bleed column, token surface) · accent hero card (radius-card-lg,
+      token accent) · relief tint card (radius-card, token accent-ink) · amber signal sliver
+      (radius-card, token warning — smallest: a status colour, not a brand one)
+    arrangement: one tall full-bleed slab (echoes the app's own vertical macOS sidebar nav) with
+      two stacked satellite cards and one small sliver beside it — "one tall slab with satellites"
+    pattern: three overlapping discs cut from the ground colour into the accent card — a stack of
+      coins, from the login mark's coin glyph and the shared cash fund the app tracks; "soft,
+      friendly, large radii" reads as literal circles here, not just rounded corners
+    scales used: radius-card-lg (22px) and radius-card (20px) for every block; space-40 as the
+      left/bottom text margin; disc radii 30/24/18 stepping down by space-8 * 0.75, each a plain
+      circle (rx = half its own diameter)
+  -->
+  <style>
+    .surface { fill: var(--surface, #1C1C1E); }
+    .accent { fill: var(--accent, #5B8F6F); rx: var(--radius-card-lg, 22px); }
+    .accent-ink { fill: var(--accent-ink, #7FB093); rx: var(--radius-card, 20px); }
+    .warning { fill: var(--warning, #E3A548); rx: var(--radius-card, 20px); }
+    .coin { fill: var(--bg-base, #0B0B0D); }
+    .name { fill: var(--ink, #FFFFFF); }
+    .tagline { fill: var(--ink-secondary, rgba(255,255,255,0.56)); }
+  </style>
+
+  <rect class="surface" x="480" y="0" width="150" height="288"/>
+
+  <rect class="accent" x="660" y="24" width="260" height="132"/>
+  <circle class="coin" cx="774" cy="58" r="30"/>
+  <circle class="coin" cx="814" cy="88" r="24"/>
+  <circle class="coin" cx="848" cy="112" r="18"/>
+
+  <rect class="accent-ink" x="660" y="172" width="150" height="92"/>
+  <rect class="warning" x="826" y="172" width="94" height="92"/>
+
+  <text class="name" x="48" y="196" font-size="120" font-weight="700" style="font-family:inherit">Quota</text>
+  <text class="tagline" x="48" y="232" font-size="14" style="font-family:inherit">Spotify Family, diviso senza pensieri.</text>
+</svg>
+</div>

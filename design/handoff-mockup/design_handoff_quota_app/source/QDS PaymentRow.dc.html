@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <script type="text/babel" src="./quota-icons.jsx"></script>
+</helmet>
+<div style="background:{{ cardBg }};border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;box-shadow:{{ shadow }};opacity:{{ opacity }}">
+  <div style="width:38px;height:38px;border-radius:999px;background:{{ iconBg }};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+    <x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="{{ iconName }}" size="17" color="{{ iconColor }}" hint-size="17px,17px"></x-import>
+  </div>
+  <div style="flex:1;min-width:0">
+    <div style="display:flex;align-items:baseline;gap:8px">
+      <span style="font-size:15px;font-weight:700;color:{{ amountColor }};text-decoration:{{ strike }}">{{ amount }}</span>
+      <span style="font-size:12.5px;color:{{ metaColor }}">· {{ method }}</span>
+    </div>
+    <div style="font-size:12.5px;color:{{ metaColor }};margin-top:2px">{{ note }}</div>
+  </div>
+  <sc-if value="{{ showUndo }}">
+    <div style="width:30px;height:30px;border-radius:999px;background:{{ undoBg }};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="undo" size="13" color="{{ undoColor }}" hint-size="13px,13px"></x-import>
+    </div>
+  </sc-if>
+  <sc-if value="{{ showReversedBadge }}">
+    <div style="padding:4px 10px;border-radius:999px;background:rgba(226,104,92,0.16);flex-shrink:0;display:flex;align-items:center;justify-content:center">
+      <span style="font-size:10.5px;font-weight:600;line-height:1;color:#E2685C">Annullato</span>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 420, &quot;height&quot;: 74}, &quot;amount&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;€6,67&quot;, &quot;tsType&quot;: &quot;string&quot;}, &quot;method&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;Revolut&quot;, &quot;tsType&quot;: &quot;string&quot;}, &quot;note&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;12 set 2026 · settembre 2026&quot;, &quot;tsType&quot;: &quot;string&quot;}, &quot;reversed&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot;}, &quot;light&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const reversed = !!this.props.reversed;
+    const light = !!this.props.light;
+    return {
+      amount: this.props.amount || '€6,67',
+      method: this.props.method || 'Bonifico',
+      note: this.props.note || '',
+      opacity: reversed ? 0.55 : 1,
+      strike: reversed ? 'line-through' : 'none',
+      cardBg: light ? '#fff' : '#1C1C1E',
+      shadow: light ? '0 6px 16px rgba(0,0,0,0.08)' : '0 6px 16px rgba(0,0,0,0.25)',
+      metaColor: light ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.45)',
+      amountColor: reversed ? (light ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.6)') : (light ? '#1C1C1E' : '#fff'),
+      iconBg: reversed ? (light ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.06)') : (light ? 'rgba(76,122,93,0.12)' : 'rgba(91,143,111,0.16)'),
+      iconColor: reversed ? (light ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.35)') : (light ? '#3F6350' : '#7FB093'),
+      undoBg: light ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.06)',
+      undoColor: light ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0.4)',
+      iconName: 'coin',
+      showUndo: !reversed,
+      showReversedBadge: reversed,
+    };
+  }
+}
+</script>
+</body>
+</html>

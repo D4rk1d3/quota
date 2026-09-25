@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <script type="text/babel" src="./quota-icons.jsx"></script>
+  <style>@keyframes qds-spin { to { transform: rotate(360deg); } }</style>
+</helmet>
+<div style="display:flex;align-items:center;justify-content:center;gap:7px;height:{{ height }};width:100%;padding:0 {{ hpad }}px;border-radius:999px;background:{{ bg }};box-sizing:border-box;opacity:{{ opacity }};white-space:nowrap">
+  <sc-if value="{{ showSpinner }}">
+    <div style="width:14px;height:14px;border-radius:999px;border:2px solid {{ spinnerTrack }};border-top-color:{{ text }};animation:qds-spin 0.9s linear infinite"></div>
+  </sc-if>
+  <sc-if value="{{ showIcon }}">
+    <x-import component-from-global-scope="QIcon" from="./quota-icons.jsx" name="{{ icon }}" size="14" color="{{ text }}" hint-size="14px,14px"></x-import>
+  </sc-if>
+  <span style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;font-size:{{ fontSize }};font-weight:600;line-height:1;color:{{ text }};white-space:nowrap">{{ label }}</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 220, &quot;height&quot;: 60}, &quot;label&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;Registra pagamento&quot;, &quot;tsType&quot;: &quot;string&quot;}, &quot;variant&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;primary&quot;, &quot;options&quot;: [&quot;primary&quot;, &quot;secondary&quot;, &quot;tertiary&quot;, &quot;destructive&quot;], &quot;tsType&quot;: &quot;string&quot;}, &quot;state&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;default&quot;, &quot;options&quot;: [&quot;default&quot;, &quot;hover&quot;, &quot;pressed&quot;, &quot;disabled&quot;, &quot;loading&quot;], &quot;tsType&quot;: &quot;string&quot;}, &quot;size&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;md&quot;, &quot;options&quot;: [&quot;sm&quot;, &quot;md&quot;], &quot;tsType&quot;: &quot;string&quot;}, &quot;icon&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;&quot;, &quot;options&quot;: [&quot;&quot;, &quot;plus&quot;, &quot;check&quot;, &quot;pencil&quot;, &quot;bell&quot;, &quot;refresh&quot;], &quot;tsType&quot;: &quot;string&quot;}, &quot;light&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const variant = this.props.variant || 'primary';
+    const state = this.props.state || 'default';
+    const size = this.props.size || 'md';
+    const light = !!this.props.light;
+    const variantsDark = {
+      primary: { default: { bg: '#5B8F6F', text: '#fff' }, hover: { bg: '#6EA07F', text: '#fff' }, pressed: { bg: '#4A7A5D', text: '#fff' } },
+      secondary: { default: { bg: 'rgba(255,255,255,0.08)', text: '#fff' }, hover: { bg: 'rgba(255,255,255,0.14)', text: '#fff' }, pressed: { bg: 'rgba(255,255,255,0.06)', text: '#fff' } },
+      tertiary: { default: { bg: 'transparent', text: '#7FB093' }, hover: { bg: 'rgba(255,255,255,0.06)', text: '#7FB093' }, pressed: { bg: 'rgba(255,255,255,0.03)', text: '#7FB093' } },
+      destructive: { default: { bg: 'rgba(226,104,92,0.16)', text: '#E2685C' }, hover: { bg: 'rgba(226,104,92,0.24)', text: '#E2685C' }, pressed: { bg: 'rgba(226,104,92,0.12)', text: '#E2685C' } },
+    };
+    const variantsLight = {
+      primary: { default: { bg: '#4C7A5D', text: '#fff' }, hover: { bg: '#436b51', text: '#fff' }, pressed: { bg: '#385a44', text: '#fff' } },
+      secondary: { default: { bg: 'rgba(0,0,0,0.06)', text: '#1C1C1E' }, hover: { bg: 'rgba(0,0,0,0.1)', text: '#1C1C1E' }, pressed: { bg: 'rgba(0,0,0,0.04)', text: '#1C1C1E' } },
+      tertiary: { default: { bg: 'transparent', text: '#3F6350' }, hover: { bg: 'rgba(0,0,0,0.04)', text: '#3F6350' }, pressed: { bg: 'rgba(0,0,0,0.02)', text: '#3F6350' } },
+      destructive: { default: { bg: 'rgba(194,59,46,0.1)', text: '#C23B2E' }, hover: { bg: 'rgba(194,59,46,0.16)', text: '#C23B2E' }, pressed: { bg: 'rgba(194,59,46,0.08)', text: '#C23B2E' } },
+    };
+    const variants = light ? variantsLight : variantsDark;
+    const v = variants[variant] || variants.primary;
+    const colors = v[state === 'disabled' || state === 'loading' ? 'default' : state] || v.default;
+    return {
+      bg: colors.bg,
+      text: colors.text,
+      opacity: state === 'disabled' ? 0.35 : (state === 'loading' ? 0.75 : 1),
+      height: size === 'sm' ? '36px' : '44px',
+      hpad: size === 'sm' ? 16 : 22,
+      fontSize: size === 'sm' ? '13px' : '14px',
+      label: this.props.label || 'Button',
+      showSpinner: state === 'loading',
+      showIcon: state !== 'loading' && !!this.props.icon,
+      icon: this.props.icon || 'plus',
+      spinnerTrack: variant === 'primary' ? 'rgba(255,255,255,0.35)' : (light ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.2)'),
+    };
+  }
+}
+</script>
+</body>
+</html>

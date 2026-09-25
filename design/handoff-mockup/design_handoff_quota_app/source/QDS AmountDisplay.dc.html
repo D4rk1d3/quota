@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="display:flex;flex-direction:column;gap:4px">
+  <div style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;font-size:{{ amountSize }};font-weight:700;line-height:1;color:{{ color }};font-variant-numeric:tabular-nums;white-space:nowrap">{{ amount }}</div>
+  <div style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;font-size:{{ labelSize }};font-weight:600;color:{{ labelColor }};text-transform:uppercase;letter-spacing:0.05em">{{ label }}</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 200, &quot;height&quot;: 70}, &quot;amount&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;€13,99&quot;, &quot;tsType&quot;: &quot;string&quot;}, &quot;label&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;Raccolto&quot;, &quot;tsType&quot;: &quot;string&quot;}, &quot;size&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;large&quot;, &quot;options&quot;: [&quot;hero&quot;, &quot;large&quot;, &quot;medium&quot;], &quot;tsType&quot;: &quot;string&quot;}, &quot;color&quot;: {&quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;&quot;, &quot;tsType&quot;: &quot;string&quot;}, &quot;light&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const sizeMap = { hero: '40px', large: '28px', medium: '20px' };
+    const light = !!this.props.light;
+    return {
+      amount: this.props.amount || '€0,00',
+      label: this.props.label || '',
+      color: this.props.color || (light ? '#1C1C1E' : '#fff'),
+      labelColor: light ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.45)',
+      amountSize: sizeMap[this.props.size] || sizeMap.large,
+      labelSize: this.props.size === 'hero' ? '12px' : '11px',
+    };
+  }
+}
+</script>
+</body>
+</html>
